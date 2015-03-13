@@ -2,6 +2,9 @@
 $(".subType").on("change", function() {
 	return $("#inputKeyword").trigger("keyup");
 });
+$('#fromNormal').on("change",function(){
+  $('.subType').prop('disabled',!$(this).prop('checked'));
+});
 $("#inputKeyword").off("keyup");
 $("#inputKeyword").on("keyup", function() {
 	var type, val, result, arr;
