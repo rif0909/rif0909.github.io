@@ -1,4 +1,4 @@
-$('form').append('<div><label class="checkbox-inline"><input type="checkbox" class="subType" value="¥Í¬¡" checked="checked">¥Í¬¡</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="°Êº©" checked="checked">°Êº©</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="¤å¬ì" checked="checked">¤å¬ì</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="²z¬ì" checked="checked">²z¬ì</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="ºtÃÀ" checked="checked">ºtÃÀ</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="Åé¨|" checked="checked">Åé¨|</label><label class="checkbox-inline" style="display:none"><input type="checkbox" class="subType" value="<«İ¶ñ>" checked="checked"><«İ¶ñ></label></div>');
+ï»¿$('form').append('<div><label class="checkbox-inline"><input type="checkbox" class="subType" value="ç”Ÿæ´»" checked="checked">ç”Ÿæ´»</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="å‹•æ¼«" checked="checked">å‹•æ¼«</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="æ–‡ç§‘" checked="checked">æ–‡ç§‘</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="ç†ç§‘" checked="checked">ç†ç§‘</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="æ¼”è—" checked="checked">æ¼”è—</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="é«”è‚²" checked="checked">é«”è‚²</label><label class="checkbox-inline" style="display:none"><input type="checkbox" class="subType" value="<å¾…å¡«>" checked="checked"><å¾…å¡«></label></div>');
 $(".subType").on("change", function() {
 	return $("#inputKeyword").trigger("keyup");
 });
@@ -23,7 +23,7 @@ $("#inputKeyword").on("keyup", function() {
 		obj = {};
 		obj['type']=type[x];
 		obj['fulltext'] = {likenocase:val[0]};
-		if(type[x] === '¥|¿ï¤@'){
+		if(type[x] === 'å››é¸ä¸€'){
 			obj['subType']={likenocase:subType};
 		}
 		arr.push(obj);
@@ -34,14 +34,14 @@ $("#inputKeyword").on("keyup", function() {
 	}
 	result.each(function(r) {
 		var imgurl, md5name;
-		if (r.type === "¥|¿ï¤@") {
-			return $("#result").append('<tr data-pos="' + r.id + '" data-type="' + r.type + '"><td class="td-more"><a href="javascript:void(0);" class="btn-more">§ó¦h</a></td><td><div class="question">' + util.highlight(val, r.question) + '</div><div class="text-danger">' + util.htmlEncode(r.answer) + '</div></td></tr>');
-		} else if (r.type === "±Æ§Ç") {
-			return $("#result").append('<tr data-pos="' + r.id + '" data-type="' + r.type + '"><td class="td-more"><a href="javascript:void(0);" class="btn-more">§ó¦h</a></td><td><div class="question">' + util.highlight(val, r.question) + '</div><div class="text-danger">' + util.htmlEncode(r.answer) + '</div></td></tr>');
+		if (r.type === "å››é¸ä¸€") {
+			return $("#result").append('<tr data-pos="' + r.id + '" data-type="' + r.type + '"><td class="td-more"><a href="javascript:void(0);" class="btn-more">æ›´å¤š</a></td><td><div class="question">' + util.highlight(val, r.question) + '</div><div class="text-danger">' + util.htmlEncode(r.answer) + '</div></td></tr>');
+		} else if (r.type === "æ’åº") {
+			return $("#result").append('<tr data-pos="' + r.id + '" data-type="' + r.type + '"><td class="td-more"><a href="javascript:void(0);" class="btn-more">æ›´å¤š</a></td><td><div class="question">' + util.highlight(val, r.question) + '</div><div class="text-danger">' + util.htmlEncode(r.answer) + '</div></td></tr>');
 		} else {
 			md5name = CryptoJS.MD5(r.imgname).toString();
 			imgurl = "http://vignette" + (util.getRandomInt(1, 5)) + ".wikia.nocookie.net/nekowiz/images/" + (md5name.charAt(0)) + "/" + (md5name.charAt(0)) + (md5name.charAt(1)) + "/" + r.imgname + "/revision/latest?path-prefix=zh";
-			return $("#result").append('<tr data-pos="' + r.id + '" data-type="' + r.type + '"><td class="td-more"><!--<a href="javascript:void(0);" class="btn-more">§ó¦h</a>--></td><td><div class="col-sm-3"><img src="' + imgurl + '" /></div><div class="col-sm-5">' + util.highlight(val, r.question) + '</div><div class="col-sm-4 text-danger">' + util.htmlEncode(r.answer) + '</div></td></tr>');
+			return $("#result").append('<tr data-pos="' + r.id + '" data-type="' + r.type + '"><td class="td-more"><!--<a href="javascript:void(0);" class="btn-more">æ›´å¤š</a>--></td><td><div class="col-sm-3"><img src="' + imgurl + '" /></div><div class="col-sm-5">' + util.highlight(val, r.question) + '</div><div class="col-sm-4 text-danger">' + util.htmlEncode(r.answer) + '</div></td></tr>');
 		}
 	});
 });
