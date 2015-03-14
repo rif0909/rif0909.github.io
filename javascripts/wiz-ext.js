@@ -1,5 +1,5 @@
 ﻿$('form').append('<div><label class="checkbox-inline"><input type="checkbox" class="subType" value="生活" checked="checked">生活</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="動漫" checked="checked">動漫</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="文科" checked="checked">文科</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="理科" checked="checked">理科</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="演藝" checked="checked">演藝</label><label class="checkbox-inline"><input type="checkbox" class="subType" value="體育" checked="checked">體育</label><label class="checkbox-inline" style="display:none"><input type="checkbox" class="subType" value="<待填>" checked="checked"><待填></label></div>');
-$('form').append('<div><label class="checkbox-inline"><input type="checkbox" class="eventType">按下Enter查詢</label></div>');
+$('form').append('<div><label class="checkbox-inline"><input type="checkbox" class="eventType" checked="checked">按下Enter查詢</label></div>');
 $(".subType").on("change", function() {
 	return $("#inputKeyword").trigger("keyup");
 });
