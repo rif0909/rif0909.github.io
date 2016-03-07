@@ -10,11 +10,54 @@
   ga('create', 'UA-59206175-1', 'auto');
   ga('send', 'pageview');
 </script>
+<script src="javascripts/jquery-1.12.1.min.js"></script>
 <script>
-var a=new Date,b=new Date(a);b.setMonth(0,0);switch(Math.round((a-b)/864E5)%3){case 0:alert("\u4f11\u5047");break;case 1:alert("\u65e9\u73ed");break;case 2:alert("\u665a\u73ed")};
+var ry = new RegExp('^[0-9]{4}$');
+var rm = new RegExp('^[0-9]{1,2}$');
+var o = new Date(2016,2,7);
+function cal(d){
+	switch(Math.floor((d-o)/864E5)%3){
+		case 0:
+			return '早班';
+		case 1:
+			return '晚班';
+		default:
+			return '休假';
+	}
+}
+function shift(){
+	if(!ry.test($('#y').val()))
+		$('#y').val('');
+	if(!rm.test($('#m').val()))
+		$('#m').val('');
+	if(!rm.test($('#d').val()))
+		$('#d').val('');
+	if($('#y').val() == '' || $('#m').val() == '' || $('#d').val() == '')
+		return;
+	var d = new Date($('#y').val(),$('#m').val()-1,$('#d').val());
+	if(d < o){
+		alert('過去就過去了')
+		return;
+	}
+	$('#y').val(d.getFullYear());
+	$('#m').val(d.getMonth()+1);
+	$('#d').val(d.getDate());
+	alert(cal(d));
+}
+$(document).ready(function(){
+	var d = new Date();
+	$('#y').val(d.getFullYear());
+	$('#m').val(d.getMonth()+1);
+	$('#d').val(d.getDate());
+	alert(cal(d));
+	$('#b').on('click',shift);
+})
 </script>
 </head>
 <body>
-Nothing else here.
+<input type=text id=y maxlength=4 size=4>年
+<input type=text id=m maxlength=4 size=2>月
+<input type=text id=d maxlength=4 size=2>日
+<input type=button id=b value="Click Me">
 </body>
 </html>
