@@ -164,10 +164,10 @@
     </div>
     <div ng-show="quiz.status.answered" ng-switch="quiz.status.correct">
         <div ng-switch-when="true">
-            <img style="position:fixed;top:20%;left:40%;" src="images/o64.png" />
+            <img style="position:fixed;top:30%;left:40%;" src="images/o64.png" />
         </div>
         <div ng-switch-when="false">
-            <img style="position:fixed;top:20%;left:40%;" src="images/x64.png" />
+            <img style="position:fixed;top:30%;left:40%;" src="images/x64.png" />
         </div>
     </div>
     <script>
@@ -195,13 +195,18 @@
                     this.clear();
                 }
                 this.radio = function (index) {
-                    $("input[name='answer']:eq(" + index + ")").prop('checked', true);
-                    this.check();
+                    var obj = $("input[name='answer']:eq(" + index + ")");
+                    if (!obj.prop('disabled')) {
+                        obj.prop('checked', true);
+                        this.check();
+                    }
                 }
                 this.ckbox = function (index) {
                     var obj = $("input[name='answer']:eq(" + index + ")");
-                    obj.prop('checked', !obj.prop('checked'));
-                    this.check();
+                    if (!obj.prop('disabled')) {
+                        obj.prop('checked', !obj.prop('checked'));
+                        this.check();
+                    }
                 }
                 this.check = function () {
                     var count = 0;
