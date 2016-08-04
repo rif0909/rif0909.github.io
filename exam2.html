@@ -13,6 +13,7 @@
     <script src="js/taffy-min.js"></script>
     <script src="js/directive.js"></script>
     <script src="js/util.js"></script>
+    <script src="js/questions.js"></script>
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
@@ -152,8 +153,8 @@
         <div class="row" style="padding-top:10px">
             <div class="col-xs-12">
                 <span style="font-size:x-large" ng-bind="'['+quiz.question.class+' '+quiz.question.sn+']'"></span>
-                <button class="btn btn-primary" ng-show="!quiz.status.answered" ng-click="quiz.answer()" ng-disabled="!quiz.status.enough">看看答案</button>
-                <button class="btn btn-primary" ng-show="quiz.status.answered" ng-click="quiz.next(1)">下一題</button>
+                <button class="btn btn-primary" ng-show="!quiz.question.answered" ng-click="quiz.answer()" ng-disabled="!quiz.question.enough">看看答案</button>
+                <button class="btn btn-primary" ng-show="quiz.question.answered" ng-click="quiz.next(1)">下一題</button>
             </div>
         </div>
         <div class="row" style="padding-top:10px">
@@ -166,14 +167,14 @@
                     <div ng-switch-when="single">
                         <ul class="list-group">
                             <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.radio($index)">
-                                <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check()" /><span ng-class="{correctAnswer:quiz.status.answered && !quiz.status.correct && option.answer}" ng-bind="option.option"></span>
+                                <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check()" /><span ng-class="{correctAnswer:quiz.question.answered && !quiz.question.correct && option.answer}" ng-bind="option.option"></span>
                             </li>
                         </ul>
                     </div>
                     <div ng-switch-when="multi">
                         <ul class="list-group">
                             <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.ckbox($index)">
-                                <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check()" /><span ng-class="{correctAnswer:quiz.status.answered && !quiz.status.correct && option.answer}" ng-bind="option.option"></span>
+                                <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check()" /><span ng-class="{correctAnswer:quiz.question.answered && !quiz.question.correct && option.answer}" ng-bind="option.option"></span>
                             </li>
                         </ul>
                     </div>
@@ -183,7 +184,7 @@
         <div class="row">
             <div class="col-xs-12" ng-bind="quiz.question.remark"></div>
         </div>
-        <div ng-show="quiz.status.answered" ng-switch="quiz.status.correct">
+        <div ng-show="quiz.question.answered" ng-switch="quiz.question.correct">
             <div ng-switch-when="true">
                 <img style="position:absolute;top:30%;left:40%;" src="images/o64.png" />
             </div>
@@ -200,7 +201,6 @@
                 this.correctCount = 0;
                 this.incorrectCount = 0;
                 that.index = -1;
-                this.status = Util.status();
                 this.selectFile = function () {
                     this.readFile = true;
                     $('.navbar-toggle').click();
@@ -241,7 +241,7 @@
                         count += obj.prop('checked');
                     })
                     var type = that.question.type.toLowerCase();
-                    that.status.enough = (type === 'single' && count === 1 || type === 'multi' && count > 1);
+                    that.question.enough = (type === 'single' && count === 1 || type === 'multi' && count > 1);
                 }
                 this.answer = function () {
                     var type = this.question.type.toLowerCase();
@@ -251,19 +251,18 @@
                         obj.prop('disabled', true);
                         correct = correct && !(obj.prop('checked') ^ (obj.attr('value') === 'true'));
                     })
-                    this.status.answered = true;
-                    this.status.correct = correct;
+                    this.question.answered = true;
+                    this.question.correct = correct;
                     correct ? this.correctCount++ : this.incorrectCount++;
                 }
                 this.next = function (n) {
                     var tmpIndex = that.index + n;
-                    if (tmpIndex === that.questions.length) {
+                    if (tmpIndex === Questions.get().length) {
                         tmpIndex = 0;
                     }
                     that.index = tmpIndex;
-                    that.questions[that.index].options = Util.shuffle(that.questions[that.index].options);
-                    that.question = that.questions[that.index];
-                    that.status = Util.status();
+                    Util.shuffle(Questions.get()[that.index].options);
+                    that.question = new Question(Questions.get()[that.index]);
                 }
                 this.jump = function () {
                     var x = parseInt($('#sn').val(), 10);
@@ -288,8 +287,10 @@
                             Util.add(arr, obj);
                         }
                         if (arr.length !== 0) {
-                            that.questions = arr;
+                            Questions.set(arr);
+                            Questions.get({ class: { '!is': 'undefined' } });
                             that.index = -1;
+                            that.questions = { length: Questions.get().length };
                             that.next(1);
                             $('#close').click();
                         } else {

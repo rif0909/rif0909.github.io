@@ -1,4 +1,56 @@
-﻿Util = (function(){
+﻿TAFFY.extend("group", function () {
+    var db, tmp, i, j, result = [], args = [], groups = [], params = arguments;
+    this.context({
+        results: this.getDBI().query(this.context())
+    });
+    db = TAFFY(this.context().results);
+    $.each(params, function () {
+        args.push(this.column);
+    });
+    tmp = db().select.apply(db(), args);
+    for (i = 0; i < tmp.length; i++) {
+        if (params.length == 1) {
+            if (params[0].func)
+                tmp[i] = params[0].func.apply(tmp[i]);
+        } else {
+            for (j = 0; j < params.length; j++) {
+                if (params[j].func)
+                    tmp[i][j] = params[j].func.apply(tmp[i][j]);
+            }
+        }
+        var exists = false;
+        for (j = 0; j < groups.length; j++) {
+            if ((exists = Util.equals(tmp[i], groups[j])))
+                break;
+        }
+        if (!exists)
+            groups.push(tmp[i]);
+
+    }
+    result.count = 0;
+    result.groups = [];
+    for (i = 0; i < groups.length; i++) {
+        var obj = {}, filter = {}, group;
+        group = groups[i];
+        if (params.length == 1) {
+            filter[params[0].column] = new Object();
+            filter[params[0].column][params[0].type] = group;
+        } else {
+            for (j = 0; j < params.length; j++) {
+                filter[params[j].column] = new Object();
+                filter[params[j].column][params[j].type] = group[j];
+            }
+        }
+        obj.group = group;
+        obj.result = db(filter).get();
+        obj.count = obj.result.length;
+        result.push(obj);
+        result.count += obj.count;
+        result.groups.push(obj.group);
+    }
+    return result;
+});
+Util = (function () {
     check = function (obj) {
         if (obj === undefined)
             return false;
@@ -41,9 +93,9 @@
         shuffle: function(array){
             var counter = array.length;
             while (counter > 0) {
-                index = Math.floor(Math.random() * counter);
+                var index = Math.floor(Math.random() * counter);
                 counter--;
-                temp = array[counter];
+                var temp = array[counter];
                 array[counter] = array[index];
                 array[index] = temp;
             }
@@ -55,6 +107,25 @@
                 answered: false,
                 correct: false
             }
+        },
+        equals:function (arr1,arr2){
+	        if(typeof(arr1) != typeof(arr2))
+                return false;
+            if(arr1 == undefined)
+                return true;
+            if(arr1.length != arr2.length)
+                return false;
+            if(arr1.length == undefined)
+                return arr1 === arr2;
+            if(typeof(arr1) == 'string'){
+                arr1 = arr1.split("");
+                arr2 = arr2.split("");
+            }
+            for(i=0; i<arr1.length; i++){
+                if(arr1[i] != arr2[i])
+                    return false;
+            }
+            return true;
         }
     };
 })();
