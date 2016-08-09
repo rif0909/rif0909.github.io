@@ -423,6 +423,7 @@
                     }
 
                     if (Questions.get(params).length === 0) {
+                        Questions.get({ class: { '!is': 'undefined' } });
                     }
                     that.index = -1;
                     that.questions = { length: Questions.get().length };
