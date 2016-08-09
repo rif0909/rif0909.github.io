@@ -422,7 +422,8 @@
                         params.type = 'multi';
                     }
 
-                    Questions.get(params);
+                    if (Questions.get(params).length === 0) {
+                    }
                     that.index = -1;
                     that.questions = { length: Questions.get().length };
                     that.next(1);
