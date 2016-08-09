@@ -64,7 +64,7 @@ Util = (function () {
         if (options === undefined || Object.prototype.toString.call(options) !== '[object Array]')
             return false;
         var answer = 0;
-        for (x in options) {
+        for (var x in options) {
             if (isEmpty(options[x].option))
                 return false;
             if (options[x].answer === true)
@@ -77,7 +77,7 @@ Util = (function () {
         return str === undefined || str === "";
     };
     contains = function (arr, obj) {
-        for (x in arr) {
+        for (var x in arr) {
             if(obj.class === arr[x].class && obj.sn === arr[x].sn)
                 return true;
         }
@@ -101,11 +101,14 @@ Util = (function () {
             }
             return array;
         },
-        status: function () {
+        getDefaultSettings: function () {
             return {
-                enough: false,
-                answered: false,
-                correct: false
+                random: false,
+                memorize: true,
+                browse: true,
+                single: true,
+                multi: true,
+                class: true
             }
         },
         equals:function (arr1,arr2){
@@ -126,6 +129,10 @@ Util = (function () {
                     return false;
             }
             return true;
+        },
+        check: function (span) {
+            var obj = $(span).prev();
+            obj.prop('checked', !obj.prop('checked'));
         }
     };
 })();

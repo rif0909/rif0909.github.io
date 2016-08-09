@@ -1,10 +1,15 @@
 ﻿Questions = (function () {
     var all = TAFFY();
     var questions = [];
+    var groups = [];
     return {
         set: function (arr) {
             all = TAFFY();
             all.insert(arr);
+            groups = [];
+            all().group({ column: 'class', type: 'is' }).forEach(function(item,idx){
+                groups.push({'name':item.group,'count':item.count});
+            });
         },
         get: function () {
             if (arguments.length > 0) {
@@ -12,8 +17,14 @@
             }
             return questions;
         },
+        getClasses: function(){
+            return groups;
+        },
         getByClass: function(classes){
-            return all({ class: [classes.join(",")]});
+            return all({class: classes}).get();
+        },
+        getTaffy:function(){
+            return all;
         }
     }
 })();

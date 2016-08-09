@@ -7,4 +7,8 @@ angular.module('myDirective', [])
     			element.bind('change', onChangeHandler);
     		}
     	};
+    }).directive('setting', function () {
+        return function ($scope, $element, attrs) {
+            $scope.$eval(attrs.setting);
+        }
     });
