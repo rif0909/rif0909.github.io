@@ -201,12 +201,14 @@
             <div class="row">
                 <div class="col-xs-12"><b>題型設定</b></div>
                 <div class="col-xs-4">
-                    <input type="checkbox" id="single" />單選
+                    <input type="checkbox" id="single"/><span onclick="Util.check(this)">單選</span>
                 </div>
                 <div class="col-xs-4">
                     <input type="checkbox" id="multi" />複選
+                    <input type="checkbox" id="multi"/><span onclick="Util.check(this)">複選</span>
                 </div>
             </div>
+            <div class="row">
             <div class="row">
                 <div class="col-xs-12">
                     <button class="btn btn-primary" ng-click="quiz.save()">儲存</button>
