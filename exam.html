@@ -14,6 +14,15 @@
     <script src="js/directive.js"></script>
     <script src="js/util.js"></script>
     <script src="js/questions.js"></script>
+    <script>
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+        ga('create', 'UA-59206175-1', 'auto');
+        ga('send', 'pageview');
+    </script>
     <!--[if lt IE 9]>
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
@@ -34,6 +43,9 @@
             padding-right : 13px;
             padding-left : 13px;
         }
+        .myHidden{
+            visibility : hidden;
+        }
     </style>
 </head>
 <body ng-controller="QuizController as quiz">
@@ -53,7 +65,7 @@
                     <div class="collapse navbar-collapse" id="functions">
                         <ul class="nav navbar-nav navbar-right">
                             <li><a ng-click="quiz.toTab('file')">讀取題庫</a></li>
-                            <li ng-show="quiz.questions && quiz.tab==='quiz'"><a ng-click="quiz.jumpTo()">跳至題號</a></li>
+                            <li ng-show="quiz.questions && quiz.tab==='quiz' && !quiz.random"><a ng-click="quiz.jumpTo()">跳至題號</a></li>
                             <li ng-show="quiz.questions"><a ng-click="quiz.toTab('setting')">設　　定</a></li>
                             <li><a data-toggle="modal" data-target="#about" ng-click="quiz.closeMenu()">關　　於</a></li>
                         </ul>
@@ -141,9 +153,9 @@
             </div>
             <div class="row" style="padding-top:10px">
                 <div class="col-xs-12">
-                    <span style="font-size:x-large" ng-bind="'['+quiz.question.class+' '+quiz.question.sn+']'"></span>
-                    <button class="btn btn-primary" ng-show="!quiz.question.answered" ng-click="quiz.answer()" ng-disabled="!quiz.question.enough">看看答案</button>
-                    <button class="btn btn-primary" ng-show="quiz.question.answered" ng-click="quiz.next(1)">下一題</button>
+                    <span style="font-size:x-large" ng-bind="'['+quiz.question.class+' '+quiz.question.sn+']'" ng-class="{'myHidden':!quiz.title}"></span>
+                    <button class="btn btn-primary" ng-show="!quiz.question.answered && !quiz.browse" ng-click="quiz.answer()" ng-disabled="!quiz.question.enough">看看答案</button>
+                    <button class="btn btn-primary" ng-show="quiz.question.answered || quiz.browse" ng-click="quiz.next(1)">下一題</button>
                 </div>
             </div>
             <div class="row" style="padding-top:10px">
@@ -155,15 +167,15 @@
                     <div ng-switch="quiz.question.type.toLowerCase()">
                         <div ng-switch-when="single">
                             <ul class="list-group">
-                                <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.radio($index)">
-                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check()" /><span ng-class="{correctAnswer:quiz.question.answered && !quiz.question.correct && option.answer}" ng-bind="option.option"></span>
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.radio($index,$event)">
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse"/><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
                         <div ng-switch-when="multi">
                             <ul class="list-group">
-                                <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.ckbox($index)">
-                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check()" /><span ng-class="{correctAnswer:quiz.question.answered && !quiz.question.correct && option.answer}" ng-bind="option.option"></span>
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.ckbox($index,$event)">
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse"/><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
@@ -183,16 +195,19 @@
             </div>
         </div>
         <div ng-cloak class="container ng-cloak" ng-switch-when="setting">
-            <div class="row" style="display:none">
+            <div class="row">
                 <div class="col-xs-12"><b>一般設定</b></div>
-                <div class="col-xs-4">
-                    <input type="checkbox" id="random" />隨機排序
+                <div class="col-xs-6">
+                    <input type="checkbox" id="random" onchange="Util.rndCheck()"/><span onclick="Util.check(this)">隨機排序</span>
                 </div>
-                <div class="col-xs-4">
-                    <input type="checkbox" id="memorize" />記憶進度
+                <div class="col-xs-6">
+                    <input type="checkbox" id="memorize" /><span onclick="Util.check(this)">記憶進度</span>
                 </div>
-                <div class="col-xs-4">
-                    <input type="checkbox" id="browse" />瀏覽模式
+                <div class="col-xs-6">
+                    <input type="checkbox" id="browse" /><span onclick="Util.check(this)">瀏覽模式</span>
+                </div>
+                <div class="col-xs-6">
+                    <input type="checkbox" id="title" /><span onclick="Util.check(this)">顯示題號</span>
                 </div>
             </div>
             <div class="row" id="classes" data-setting="quiz.loadCookie()">
@@ -225,8 +240,9 @@
                 this.incorrectCount = 0;
                 that.index = -1;
                 this.tab = 'file';
-                this.single = false;
-                this.multi = false;
+                this.random = false;
+                this.browse = false;
+                this.title = false;
                 this.toTab = function (tab) {
                     this.tab = tab;
                     $('.navbar-toggle').click();
@@ -247,25 +263,27 @@
                     this.tab = this.question ? 'quiz' : 'file';
                     this.clear();
                 }
-                this.radio = function (index) {
+                this.radio = function (index,$event) {
                     var obj = $("input[name='answer']:eq(" + index + ")");
                     if (!obj.prop('disabled')) {
                         obj.prop('checked', true);
-                        this.check();
+                        this.check($event);
                     }
                 }
-                this.ckbox = function (index) {
+                this.ckbox = function (index,$event) {
                     var obj = $("input[name='answer']:eq(" + index + ")");
                     if (!obj.prop('disabled')) {
                         obj.prop('checked', !obj.prop('checked'));
-                        this.check();
+                        this.check($event);
                     }
                 }
-                this.check = function () {
+                this.check = function ($event) {
+                    $event.stopPropagation();
                     var count = 0;
                     $("input[name='answer']").each(function () {
                         var obj = $(this);
-                        count += obj.prop('checked');
+                        if (obj.prop('checked'))
+                            count++;
                     })
                     var type = that.question.type.toLowerCase();
                     that.question.enough = (type === 'single' && count === 1 || type === 'multi' && count > 1);
@@ -286,10 +304,18 @@
                     var tmpIndex = that.index + n;
                     if (tmpIndex === Questions.get().length) {
                         tmpIndex = 0;
+                        this.initQuestions();
                     }
                     that.index = tmpIndex;
                     Util.shuffle(Questions.get()[that.index].options);
                     that.question = new Question(Questions.get()[that.index]);
+                    var settings = angular.fromJson($cookies.get('quiz.settings'));
+                    if (settings.memorize) {
+                        settings.position = this.index;
+                        var expires = new Date();
+                        expires.setDate(expires.getDate() + 7);
+                        $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
+                    }
                 }
                 this.jump = function () {
                     var x = parseInt($('#sn').val(), 10);
@@ -314,6 +340,7 @@
                             try {
                                 var obj = angular.fromJson(data[json]);
                                 obj.type = obj.type.toLowerCase();
+                                obj.__id = json;
                             } catch (err) { }
                             Util.add(arr, obj);
                         }
@@ -341,9 +368,13 @@
                     } else {
                         settings = angular.fromJson(settings);
                     }
-                    $('#random').prop('checked', settings.random);
-                    $('#memorize').prop('checked', settings.memorize);
+                    if (settings.random) {
+                        $('#random').prop('checked', settings.random).trigger('change');
+                    } else {
+                        $('#memorize').prop('checked', settings.memorize);
+                    }
                     $('#browse').prop('checked', settings.browse);
+                    $('#title').prop('checked', settings.title);
                     $('#single').prop('checked', settings.single);
                     $('#multi').prop('checked', settings.multi);
 
@@ -371,8 +402,16 @@
                     settings.random = $('#random').prop('checked');
                     settings.memorize = $('#memorize').prop('checked');
                     settings.browse = $('#browse').prop('checked');
+                    settings.title = $('#title').prop('checked');
                     settings.single = $('#single').prop('checked');
                     settings.multi = $('#multi').prop('checked');
+
+                    if (settings.random) {
+                        settings.position = 0;
+                    } else {
+                        settings.position = this.index;
+                    }
+
                     var str = '';
                     $('input[name="class"]').each(function () {
                         var obj = $(this);
@@ -425,7 +464,22 @@
                     if (Questions.get(params).length === 0) {
                         Questions.get({ class: { '!is': 'undefined' } });
                     }
-                    that.index = -1;
+                    this.random = settings.random;
+                    this.browse = settings.browse;
+                    this.title = settings.title;
+                    if (settings.random) {
+                        Util.shuffle(Questions.get());
+                        that.index = -1;
+                    } else {
+                        Questions.get().sort(function (a,b) {
+                            return a.__id - b.__id;
+                        });
+                        if (settings.memorize) {
+                            that.index = settings.position - 1;
+                        } else {
+                            that.index = -1;
+                        }
+                    }
                     that.questions = { length: Questions.get().length };
                     that.next(1);
                 }

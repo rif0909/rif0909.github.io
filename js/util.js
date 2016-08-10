@@ -106,9 +106,11 @@ Util = (function () {
                 random: false,
                 memorize: true,
                 browse: true,
+                title: true,
                 single: true,
                 multi: true,
-                class: true
+                class: true,
+                position: 0
             }
         },
         equals:function (arr1,arr2){
@@ -132,7 +134,17 @@ Util = (function () {
         },
         check: function (span) {
             var obj = $(span).prev();
-            obj.prop('checked', !obj.prop('checked'));
+            if (!obj.prop('disabled')) {
+                obj.prop('checked', !obj.prop('checked')).trigger('change');
+            }
+        },
+        rndCheck: function () {
+            if ($('#random').prop('checked')) {
+                $('#memorize').prop('checked', false);
+                $('#memorize').prop('disabled',true);
+            } else {
+                $('#memorize').prop('disabled', false);
+            }
         }
     };
 })();
