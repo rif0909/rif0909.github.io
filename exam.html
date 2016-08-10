@@ -309,7 +309,12 @@
                     that.index = tmpIndex;
                     Util.shuffle(Questions.get()[that.index].options);
                     that.question = new Question(Questions.get()[that.index]);
-                    var settings = angular.fromJson($cookies.get('quiz.settings'));
+                    var settings = $cookies.get('quiz.settings');
+                    if (settings === undefined) {
+                        settings = Util.getDefaultSettings();
+                    } else {
+                        settings = angular.fromJson(settings);
+                    }
                     if (settings.memorize) {
                         settings.position = this.index;
                         var expires = new Date();
