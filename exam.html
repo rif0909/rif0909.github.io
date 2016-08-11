@@ -405,8 +405,7 @@
                             that.tab = 'quiz';
                             $('#close').click();
                         } else {
-                            that.errMsg = '選擇的檔案內無符合的題目!';
-                            $('#warning').modal('toggle');
+                            alert('選擇的檔案內無符合的題目!');
                         }
                     }
                     reader.readAsText(f);
