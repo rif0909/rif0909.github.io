@@ -64,9 +64,11 @@
                     </div>
                     <div class="collapse navbar-collapse" id="functions">
                         <ul class="nav navbar-nav navbar-right">
-                            <li><a ng-click="quiz.toTab('file')">讀取題庫</a></li>
+                            <li><a ng-show="quiz.tab !== 'error'" ng-click="quiz.toTab('file')">讀取題庫</a></li>
                             <li ng-show="quiz.questions && quiz.tab==='quiz' && !quiz.random"><a ng-click="quiz.jumpTo()">跳至題號</a></li>
-                            <li ng-show="quiz.questions"><a ng-click="quiz.toTab('setting')">設　　定</a></li>
+                            <li ng-show="quiz.hasErrors && quiz.tab !== 'error'"><a ng-click="quiz.toError()">檢視錯誤</a></li>
+                            <li ng-show="quiz.tab === 'error'"><a ng-click="quiz.clearError()">清除錯誤</a></li>
+                            <li ng-show="quiz.questions && quiz.tab !== 'error'"><a ng-click="quiz.toTab('setting')">設　　定</a></li>
                             <li><a data-toggle="modal" data-target="#about" ng-click="quiz.closeMenu()">關　　於</a></li>
                         </ul>
                     </div>
@@ -98,9 +100,7 @@
                         <button type="button" class="close" data-dismiss="modal">&times;</button>
                         <img src="images/warning.png" />
                     </div>
-                    <div class="modal-body">
-                        <p>選擇的檔案內無符合的題目!</p>
-                    </div>
+                    <div class="modal-body" ng-bind="quiz.errMsg"></div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                     </div>
@@ -194,6 +194,45 @@
                 </div>
             </div>
         </div>
+        <div ng-cloak class="container ng-cloak" ng-switch-when="error">
+            <div class="row" style="padding-top:10px">
+                <div class="col-xs-12">
+                    <button class="btn btn-primary" ng-click="quiz.closeError()">關　閉</button>
+                    <button class="btn btn-primary" ng-class="{'myHidden':quiz.eIndex <= 0}" ng-click="quiz.nextError(-1)">上一題</button>
+                    <button class="btn btn-primary" ng-class="{'myHidden':quiz.eIndex >= quiz.eMax}" ng-click="quiz.nextError(1)">下一題</button>
+                </div>
+                <div class="col-xs-12">
+                    <span style="font-size:x-large" ng-bind="'['+quiz.question.class+' '+quiz.question.sn+']'"></span>
+                </div>
+            </div>
+            <div class="row" style="padding-top:10px">
+                <div class="col-xs-12" ng-bind="quiz.question.question">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div ng-switch="quiz.question.type.toLowerCase()">
+                        <div ng-switch-when="single">
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options">
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-checked="option.selected" ng-disabled="true" /><span ng-class="{correctAnswer:option.answer}" ng-bind="option.option"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div ng-switch-when="multi">
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options">
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-checked="option.selected" ng-disabled="true" /><span ng-class="{correctAnswer:option.answer}" ng-bind="option.option"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12" ng-bind="quiz.question.remark"></div>
+            </div>
+        </div>
         <div ng-cloak class="container ng-cloak" ng-switch-when="setting">
             <div class="row">
                 <div class="col-xs-12"><b>一般設定</b></div>
@@ -243,6 +282,10 @@
                 this.random = false;
                 this.browse = false;
                 this.title = false;
+                this.hasErrors = false;
+                this.eIndex = -1;
+                this.eMax = -1;
+                this.errMsg = '';
                 this.toTab = function (tab) {
                     this.tab = tab;
                     $('.navbar-toggle').click();
@@ -252,31 +295,31 @@
                     $('#errmsg').hide();
                     $('#jump').modal('toggle');
                     $('.navbar-toggle').click();
-                }
+                };
                 this.closeMenu = function () {
                     $('.navbar-toggle').click();
-                }
+                };
                 this.clear = function () {
                     $('#files').val('');
-                }
+                };
                 this.close = function () {
                     this.tab = this.question ? 'quiz' : 'file';
                     this.clear();
-                }
-                this.radio = function (index,$event) {
+                };
+                this.radio = function (index, $event) {
                     var obj = $("input[name='answer']:eq(" + index + ")");
                     if (!obj.prop('disabled')) {
                         obj.prop('checked', true);
                         this.check($event);
                     }
-                }
-                this.ckbox = function (index,$event) {
+                };
+                this.ckbox = function (index, $event) {
                     var obj = $("input[name='answer']:eq(" + index + ")");
                     if (!obj.prop('disabled')) {
                         obj.prop('checked', !obj.prop('checked'));
                         this.check($event);
                     }
-                }
+                };
                 this.check = function ($event) {
                     $event.stopPropagation();
                     var count = 0;
@@ -287,19 +330,26 @@
                     })
                     var type = that.question.type.toLowerCase();
                     that.question.enough = (type === 'single' && count === 1 || type === 'multi' && count > 1);
-                }
+                };
                 this.answer = function () {
                     var type = this.question.type.toLowerCase();
                     var correct = true;
-                    $("input[name='answer']").each(function () {
+                    $("input[name='answer']").each(function (index) {
                         var obj = $(this);
                         obj.prop('disabled', true);
                         correct = correct && !(obj.prop('checked') ^ (obj.attr('value') === 'true'));
+                        that.question.options[index].selected = obj.prop('checked');
                     })
                     this.question.answered = true;
                     this.question.correct = correct;
-                    correct ? this.correctCount++ : this.incorrectCount++;
-                }
+                    if (correct) {
+                        this.correctCount++;
+                    } else {
+                        this.incorrectCount++;
+                        this.hasErrors = true;
+                        Questions.setErrors(this.question);
+                    }
+                };
                 this.next = function (n) {
                     var tmpIndex = that.index + n;
                     if (tmpIndex === Questions.get().length) {
@@ -321,12 +371,12 @@
                         expires.setDate(expires.getDate() + 7);
                         $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
                     }
-                }
+                };
                 this.jump = function () {
                     var x = parseInt($('#sn').val(), 10);
                     if (x >= 1 && x <= that.questions.length) {
-                        this.index = x;
-                        this.next(-1);
+                        this.index = x - 1;
+                        this.next(0);
                         $('#sn').val('');
                         $('#errmsg').hide();
                         $('#jump').modal('toggle');
@@ -334,7 +384,7 @@
                         $('#sn').val('');
                         $('#errmsg').show();
                     }
-                }
+                };
                 this.parseFile = function (event) {
                     var f = event.target.files[0];
                     var reader = new FileReader();
@@ -355,6 +405,7 @@
                             that.tab = 'quiz';
                             $('#close').click();
                         } else {
+                            that.errMsg = '選擇的檔案內無符合的題目!';
                             $('#warning').modal('toggle');
                         }
                     }
@@ -364,8 +415,8 @@
                     if (this.saveCookie($cookies)) {
                         this.initQuestions();
                         this.tab = 'quiz';
-                    } 
-                }
+                    }
+                };
                 this.loadCookie = function (last) {
                     var settings = $cookies.get('quiz.settings');
                     if (settings === undefined) {
@@ -386,14 +437,14 @@
                     $('#classes').append('<div class="col-xs-12"><b>類別設定</b></div>');
                     var classes = Questions.getClasses();
                     for (var i = 0; i < classes.length; i++) {
-                        $('#classes').append('<div class="col-xs-4" name="xxx"><input type="checkbox" name="class" value="'+classes[i].name+'" /><span onclick="Util.check(this)">'+classes[i].name+'['+classes[i].count+']</span></div>')
+                        $('#classes').append('<div class="col-xs-4" name="xxx"><input type="checkbox" name="class" value="' + classes[i].name + '" /><span onclick="Util.check(this)">' + classes[i].name + '[' + classes[i].count + ']</span></div>')
                     }
-                    
+
                     if (typeof settings.class === 'boolean') {
                         $('input[name="class"]').each(function () {
                             $(this).prop('checked', true);
                         });
-                    } else if(typeof settings.class === 'string') {
+                    } else if (typeof settings.class === 'string') {
                         $('input[name="class"]').each(function () {
                             var obj = $(this);
                             if (settings.class.indexOf(obj.val()) !== -1) {
@@ -401,7 +452,7 @@
                             }
                         });
                     }
-                }
+                };
                 this.saveCookie = function () {
                     var settings = Util.getDefaultSettings();
                     settings.random = $('#random').prop('checked');
@@ -425,7 +476,8 @@
                         }
                     });
                     if (str === '') {
-                        alert('請至少選擇一種類別');
+                        this.errMsg = '請至少選擇一種類別';
+                        $('#warning').modal('toggle');
                         return false;
                     } else {
                         var arr = Questions.getByClass(str.split(','));
@@ -437,7 +489,8 @@
                             }
                         }
                         if (!found) {
-                            alert('選擇的類別及題型未包含任何題目');
+                            this.errMsg = '選擇的類別及題型未包含任何題目';
+                            $('#warning').modal('toggle');
                             return false;
                         }
                     }
@@ -446,7 +499,7 @@
                     expires.setDate(expires.getDate() + 7);
                     $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
                     return true;
-                }
+                };
                 this.initQuestions = function () {
                     var settings = $cookies.get('quiz.settings');
                     if (settings === undefined) {
@@ -472,21 +525,47 @@
                     this.random = settings.random;
                     this.browse = settings.browse;
                     this.title = settings.title;
+                    that.questions = { length: Questions.get().length };
                     if (settings.random) {
                         Util.shuffle(Questions.get());
-                        that.index = -1;
+                        that.index = 0;
                     } else {
-                        Questions.get().sort(function (a,b) {
+                        Questions.get().sort(function (a, b) {
                             return a.__id - b.__id;
                         });
-                        if (settings.memorize) {
-                            that.index = settings.position - 1;
+                        if (settings.memorize && settings.position < that.questions.length) {
+                            that.index = settings.position;
                         } else {
-                            that.index = -1;
+                            that.index = 0;
                         }
                     }
                     that.questions = { length: Questions.get().length };
-                    that.next(1);
+                    that.next(0);
+                };
+                this.toError = function () {
+                    this.tab = 'error';
+                    $('.navbar-toggle').click();
+                    this.eMax = Questions.getErrors().length - 1;
+                    this.eIndex = this.eMax;
+                    this.nextError(0);
+                };
+                this.nextError = function (n) {
+                    var tmpIndex = this.eIndex + n;
+                    if (tmpIndex === Questions.getErrors().length) {
+                        tmpIndex = 0;
+                    }
+                    this.eIndex = tmpIndex;
+                    this.question = Questions.getErrors()[this.eIndex];
+                };
+                this.closeError = function () {
+                    this.tab = 'quiz';
+                    this.next(0);
+                };
+                this.clearError = function () {
+                    Questions.clearErrors();
+                    this.closeError();
+                    this.hasErrors = false;
+                    $('.navbar-toggle').click();
                 }
             })
     </script>

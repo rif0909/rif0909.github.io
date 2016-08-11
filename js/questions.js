@@ -2,6 +2,7 @@
     var all = TAFFY();
     var questions = [];
     var groups = [];
+    var errors = [];
     return {
         set: function (arr) {
             all = TAFFY();
@@ -20,11 +21,17 @@
         getClasses: function(){
             return groups;
         },
-        getByClass: function(classes){
-            return all({class: classes}).get();
+        getByClass: function (classes) {
+            return all({ class: classes }).get();
         },
-        getTaffy:function(){
-            return all;
+        setErrors: function (obj) {
+            errors.push(obj);
+        },
+        getErrors: function () {
+            return errors;
+        },
+        clearErrors: function(){
+            errors = [];
         }
     }
 })();
@@ -33,7 +40,12 @@ Question = function (json) {
     this.sn = json.sn;
     this.type = json.type;
     this.question = json.question;
-    this.options = json.options;
+    this.options = [];
+    for (var idx in json.options) {
+        var tmp = $.extend({},json.options[idx]);
+        tmp.selected = false;
+        this.options.push(tmp);
+    }
     this.remark = json.remark;
     this.answered = false;
     this.correct = false;
