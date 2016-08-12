@@ -104,7 +104,7 @@ Util = (function () {
         getDefaultSettings: function () {
             return {
                 random: false,
-                memorize: true,
+                memorize: false,
                 browse: true,
                 title: true,
                 single: true,

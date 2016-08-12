@@ -249,9 +249,7 @@
                     <input type="checkbox" id="title" /><span onclick="Util.check(this)">顯示題號</span>
                 </div>
             </div>
-            <div class="row" id="classes" data-setting="quiz.loadCookie()">
-                
-            </div>
+            <div class="row" id="classes" data-setting="quiz.loadCookie()"></div>
             <div class="row">
                 <div class="col-xs-12"><b>題型設定</b></div>
                 <div class="col-xs-4">
@@ -363,7 +361,7 @@
                     if (settings === undefined) {
                         settings = Util.getDefaultSettings();
                     } else {
-                        settings = angular.fromJson(settings);
+                        settings = $.extend(Util.getDefaultSettings(), angular.fromJson(settings));
                     }
                     if (settings.memorize) {
                         settings.position = this.index;
@@ -421,7 +419,7 @@
                     if (settings === undefined) {
                         settings = Util.getDefaultSettings();
                     } else {
-                        settings = angular.fromJson(settings);
+                        settings = $.extend(Util.getDefaultSettings(), angular.fromJson(settings));
                     }
                     if (settings.random) {
                         $('#random').prop('checked', settings.random).trigger('change');
@@ -504,7 +502,7 @@
                     if (settings === undefined) {
                         settings = Util.getDefaultSettings();
                     } else {
-                        settings = angular.fromJson(settings);
+                        settings = $.extend(Util.getDefaultSettings(),angular.fromJson(settings));
                     }
                     var params = {};
                     if (typeof settings.class === 'boolean') {
@@ -517,7 +515,6 @@
                     } else if (settings.multi && !settings.single) {
                         params.type = 'multi';
                     }
-
                     if (Questions.get(params).length === 0) {
                         Questions.get({ class: { '!is': 'undefined' } });
                     }
