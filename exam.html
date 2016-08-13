@@ -65,7 +65,8 @@
                     <div class="collapse navbar-collapse" id="functions">
                         <ul class="nav navbar-nav navbar-right">
                             <li><a ng-show="quiz.tab !== 'error'" ng-click="quiz.toTab('file')">讀取題庫</a></li>
-                            <li ng-show="quiz.questions && quiz.tab==='quiz' && !quiz.random"><a ng-click="quiz.jumpTo()">跳至題號</a></li>
+                            <li ng-show="quiz.questions && quiz.tab==='quiz'"><a ng-click="quiz.search()">題庫搜尋</a></li>
+                            <li ng-show="quiz.questions && quiz.tab==='quiz' && !quiz.random"><a ng-click="quiz.jump()">跳至題號</a></li>
                             <li ng-show="quiz.hasErrors && quiz.tab !== 'error'"><a ng-click="quiz.toError()">檢視錯誤</a></li>
                             <li ng-show="quiz.tab === 'error'"><a ng-click="quiz.clearError()">清除錯誤</a></li>
                             <li ng-show="quiz.questions && quiz.tab !== 'error'"><a ng-click="quiz.toTab('setting')">設　　定</a></li>
@@ -87,7 +88,7 @@
                         Any suggestions please mail to <a href="mailto:rif0909@gmail.com">rif0909@gmail.com</a>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
                     </div>
                 </div>
             </div>
@@ -102,7 +103,7 @@
                     </div>
                     <div class="modal-body" ng-bind="quiz.errMsg"></div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
                     </div>
                 </div>
             </div>
@@ -120,8 +121,29 @@
                         <span id="errmsg" style="color:red;display:none">請輸入1~{{quiz.questions.length}}</span>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-default" ng-click="quiz.jump()">確定</button>
-                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-default" ng-click="quiz.jumpTo()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="search" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        請輸入關鍵字：
+                    </div>
+                    <div class="modal-body">
+                        <span style="color:blue">多個關鍵字請以;(分號)區隔</span>
+                        <input type="text" id="keyword" placeholder="請輸入關鍵字" onfocus="$(this).select()"/><br />
+                        <input type="radio" name="keywordRule" id="and" checked="checked" /><span onclick="Util.check(this)">AND</span><input type="radio" name="keywordRule" id="or" style="margin-left:10px"/><span onclick="Util.check(this)">OR</span><br />
+                        <span id="errmsg2" style="color:red;display:none">以關鍵字查詢無結果</span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" ng-click="quiz.searchFor()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                     </div>
                 </div>
             </div>
@@ -260,6 +282,10 @@
                 </div>
             </div>
             <div class="row">
+                <div class="col-xs-12"><b>題庫搜尋關鍵字</b></div>
+                <div class="col-xs-12" ng-bind="'【'+quiz.keyword.join(quiz.keywordRuleAnd ? ' and ' : ' or ')+'】'"></div>
+            </div>
+            <div class="row">
                 <div class="col-xs-12">&nbsp;</div>
             </div>
             <div class="row">
@@ -269,13 +295,14 @@
                 </div>
             </div>
         </div>
+    </div>
     <script>
         angular.module("QuizApp", [ 'myDirective','ngCookies'])
             .controller('QuizController', function ($log, $scope, $cookies) {
                 var that = this;
                 this.correctCount = 0;
                 this.incorrectCount = 0;
-                that.index = -1;
+                this.index = -1;
                 this.tab = 'file';
                 this.random = false;
                 this.browse = false;
@@ -284,11 +311,13 @@
                 this.eIndex = -1;
                 this.eMax = -1;
                 this.errMsg = '';
+                this.keyword = [];
+                this.keywordRuleAnd = true;
                 this.toTab = function (tab) {
                     this.tab = tab;
                     $('.navbar-toggle').click();
                 };
-                this.jumpTo = function () {
+                this.jump = function () {
                     $('#sn').val('');
                     $('#errmsg').hide();
                     $('#jump').modal('toggle');
@@ -326,8 +355,8 @@
                         if (obj.prop('checked'))
                             count++;
                     })
-                    var type = that.question.type.toLowerCase();
-                    that.question.enough = (type === 'single' && count === 1 || type === 'multi' && count > 1);
+                    var type = this.question.type.toLowerCase();
+                    this.question.enough = (type === 'single' && count === 1 || type === 'multi' && count > 1);
                 };
                 this.answer = function () {
                     var type = this.question.type.toLowerCase();
@@ -349,14 +378,17 @@
                     }
                 };
                 this.next = function (n) {
-                    var tmpIndex = that.index + n;
-                    if (tmpIndex === Questions.get().length) {
+                    var tmpIndex = this.index + n;
+                    var questions = (this.keyword.length !== 0  ? Questions.search() : Questions.get());
+                    if (tmpIndex === questions.length) {
                         tmpIndex = 0;
-                        this.initQuestions();
+                        if (this.random) {
+                            Util.shuffle(questions);
+                        }
                     }
-                    that.index = tmpIndex;
-                    Util.shuffle(Questions.get()[that.index].options);
-                    that.question = new Question(Questions.get()[that.index]);
+                    this.index = tmpIndex;
+                    Util.shuffle(questions[this.index].options);
+                    this.question = new Question(questions[this.index]);
                     var settings = $cookies.get('quiz.settings');
                     if (settings === undefined) {
                         settings = Util.getDefaultSettings();
@@ -370,9 +402,9 @@
                         $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
                     }
                 };
-                this.jump = function () {
+                this.jumpTo = function () {
                     var x = parseInt($('#sn').val(), 10);
-                    if (x >= 1 && x <= that.questions.length) {
+                    if (x >= 1 && x <= this.questions.length) {
                         this.index = x - 1;
                         this.next(0);
                         $('#sn').val('');
@@ -398,7 +430,8 @@
                             Util.add(arr, obj);
                         }
                         if (arr.length !== 0) {
-                            Questions.set(arr);
+                            Questions.init(arr);
+                            that.keyword = [];
                             that.initQuestions();
                             that.tab = 'quiz';
                             $('#close').click();
@@ -410,7 +443,11 @@
                 };
                 this.save = function () {
                     if (this.saveCookie($cookies)) {
-                        this.initQuestions();
+                        if (this.keyword.length === 0) {
+                            this.initQuestions();
+                        } else {
+                            this.initKeyword();
+                        }
                         this.tab = 'quiz';
                     }
                 };
@@ -476,22 +513,40 @@
                         this.errMsg = '請至少選擇一種類別';
                         $('#warning').modal('toggle');
                         return false;
+                    } else if (!settings.single && !settings.multi) {
+                        this.errMsg = '請至少選擇一種題型';
+                        $('#warning').modal('toggle');
+                        return false;
                     } else {
-                        var arr = Questions.getByClass(str.split(','));
-                        var found = false;
-                        for (x in arr) {
-                            if (arr[x].type === 'single' && settings.single || arr[x].type === 'multi' && settings.multi) {
-                                found = true;
-                                break;
+                        settings.class = str.substring(0, str.length - 1);
+                        var params = {};
+                        params.class = settings.class.split(",");
+                        if (settings.single && !settings.multi) {
+                            params.type = 'single';
+                        } else if (settings.multi && !settings.single) {
+                            params.type = 'multi';
+                        }
+                        var arr = [];
+                        if (this.keyword.length === 0){
+                            arr = Questions.get(params);
+                            if(arr.length === 0){ 
+                                this.errMsg = '選擇的類別及題型未包含任何題目';
+                                $('#warning').modal('toggle');
+                                return false;
+                            }else{
+                                Questions.set(arr);
+                            }
+                        } else {
+                            arr = Questions.search(params,this.keyword,this.keywordRuleAnd);
+                            if(arr.length === 0){
+                                this.errMsg = '選擇的類別及題型未包含任何題目';
+                                $('#warning').modal('toggle');
+                                return false;
+                            }else{
+                                Questions.setSearched(arr);
                             }
                         }
-                        if (!found) {
-                            this.errMsg = '選擇的類別及題型未包含任何題目';
-                            $('#warning').modal('toggle');
-                            return false;
-                        }
                     }
-                    settings.class = str;
                     var expires = new Date();
                     expires.setDate(expires.getDate() + 7);
                     $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
@@ -515,28 +570,34 @@
                     } else if (settings.multi && !settings.single) {
                         params.type = 'multi';
                     }
-                    if (Questions.get(params).length === 0) {
-                        Questions.get({ class: { '!is': 'undefined' } });
+                    var arr = Questions.get(params);
+                    if (arr.length === 0) {
+                        Questions.set(Questions.get({ class: { '!is': 'undefined' } }));
+                        $.extend(settings, { class: true, single: true, multi: true });
+                        var expires = new Date();
+                        expires.setDate(expires.getDate() + 7);
+                        $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
+                    } else {
+                        Questions.set(arr);
                     }
                     this.random = settings.random;
                     this.browse = settings.browse;
                     this.title = settings.title;
-                    that.questions = { length: Questions.get().length };
+                    this.questions = { length: Questions.get().length };
                     if (settings.random) {
                         Util.shuffle(Questions.get());
-                        that.index = 0;
+                        this.index = 0;
                     } else {
                         Questions.get().sort(function (a, b) {
                             return a.__id - b.__id;
                         });
-                        if (settings.memorize && settings.position < that.questions.length) {
-                            that.index = settings.position;
+                        if (settings.memorize && settings.position < this.questions.length) {
+                            this.index = settings.position;
                         } else {
-                            that.index = 0;
+                            this.index = 0;
                         }
                     }
-                    that.questions = { length: Questions.get().length };
-                    that.next(0);
+                    this.next(0);
                 };
                 this.toError = function () {
                     this.tab = 'error';
@@ -562,7 +623,96 @@
                     this.closeError();
                     this.hasErrors = false;
                     $('.navbar-toggle').click();
-                }
+                };
+                this.search = function () {
+                    $('#errmsg2').hide();
+                    $('#keyword').val(this.keyword.join(';'));
+                    if (this.keywordRuleAnd) {
+                        $('#and').prop('checked', true);
+                    } else {
+                        $('#or').prop('checked', true);
+                    }
+                    $('#search').modal('toggle');
+                    $('.navbar-toggle').click();
+                };
+                this.searchFor = function () {
+                    var arr = $('#keyword').val().split(';');
+                    var keyword = $.grep(arr, function (n,i) {
+                        return n !== '' && arr.indexOf(n) === i;
+                    });
+                    if (keyword.length !== 0) {
+                        var tmp = this.keyword;
+                        var tmpRule = this.keywordRuleAnd;
+                        this.keyword = keyword;
+                        this.keywordRuleAnd = $('#and').prop('checked');
+                        if (this.initKeyword()) {
+                            $('#search').modal('toggle');
+                        } else {
+                            this.keyword = tmp;
+                            this.keywordRuleAnd = tmpRule;
+                            $('#keyword').val(this.keyword.join(';'));
+                            if (this.keywordRuleAnd) {
+                                $('#and').prop('checked', true);
+                            } else {
+                                $('#or').prop('checked', true);
+                            }
+                        }
+                    } else if (this.keyword.length !== 0) {
+                        this.keyword = keyword;
+                        this.keywordRuleAnd = $('#and').prop('checked');
+                        this.initQuestions();
+                        $('#search').modal('toggle');
+                    } else {
+                        this.keywordRuleAnd = $('#and').prop('checked');
+                        $('#search').modal('toggle');
+                    }
+                };
+                this.initKeyword = function () {
+                    var settings = $cookies.get('quiz.settings');
+                    if (settings === undefined) {
+                        settings = Util.getDefaultSettings();
+                    } else {
+                        settings = $.extend(Util.getDefaultSettings(), angular.fromJson(settings));
+                    }
+                    var params = {};
+                    if (typeof settings.class === 'boolean') {
+                        params.class = { '!is': 'undefined' };
+                    } else if (typeof settings.class === 'string') {
+                        params.class = settings.class.split(',');
+                    }
+                    if (settings.single && !settings.multi) {
+                        params.type = 'single';
+                    } else if (settings.multi && !settings.single) {
+                        params.type = 'multi';
+                    }
+                    var arr = Questions.search(params, this.keyword, $('#and').prop('checked'));
+                    if (arr.length === 0) {
+                        $('#errmsg2').show();
+                        return false;
+                    } else {
+                        $('#errmsg2').hide();
+                        Questions.setSearched(arr);
+                    }
+                    this.random = settings.random;
+                    this.browse = settings.browse;
+                    this.title = settings.title;
+                    this.questions = { length: Questions.search().length };
+                    if (settings.random) {
+                        Util.shuffle(Questions.search());
+                        this.index = 0;
+                    } else {
+                        Questions.search().sort(function (a, b) {
+                            return a.__id - b.__id;
+                        });
+                        if (settings.memorize && settings.position < this.questions.length) {
+                            this.index = settings.position;
+                        } else {
+                            this.index = 0;
+                        }
+                    }
+                    this.next(0);
+                    return true;
+                };
             })
     </script>
 </body>

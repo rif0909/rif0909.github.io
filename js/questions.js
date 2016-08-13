@@ -3,26 +3,27 @@
     var questions = [];
     var groups = [];
     var errors = [];
+    var searched = [];
     return {
-        set: function (arr) {
-            all = TAFFY();
-            all.insert(arr);
+        init: function (arr) {
+            all = TAFFY(arr);
             groups = [];
+            searched = [];
             all().group({ column: 'class', type: 'is' }).forEach(function(item,idx){
                 groups.push({'name':item.group,'count':item.count});
             });
         },
         get: function () {
             if (arguments.length > 0) {
-                questions = all(arguments).get();
+                return all(arguments).get();
             }
             return questions;
         },
+        set: function(arr){
+            questions = arr;
+        },
         getClasses: function(){
             return groups;
-        },
-        getByClass: function (classes) {
-            return all({ class: classes }).get();
         },
         setErrors: function (obj) {
             errors.push(obj);
@@ -32,6 +33,20 @@
         },
         clearErrors: function(){
             errors = [];
+        },
+        search: function (params, keyword, and) {
+            if (arguments.length >= 3) {
+                if (and) {
+                    return all(params).search(keyword);
+                } else {
+                    var obj = all(params);
+                    return obj.search.apply(obj, keyword);
+                }
+            }
+            return searched;
+        },
+        setSearched: function(arr){
+            searched = arr;
         }
     }
 })();

@@ -50,6 +50,51 @@
     }
     return result;
 });
+TAFFY.extend("search", function () {
+    var result = [], params = arguments;
+    this.context({
+        results: this.getDBI().query(this.context())
+    });
+    tmp = this.context().results;
+    if (params.length === 1 && Object.prototype.toString.call(params[0]) === '[object Array]') {
+        $.each(tmp, function () {
+            var options = '', match = true;
+            $.each(this.options, function () {
+                options = options + '|' + this.option.toLowerCase();
+            });
+            var question = this.question.toLowerCase();
+            for (x in params[0]) {
+                var k = params[0][x].toLowerCase();
+                if (question.indexOf(k) === -1 && options.indexOf(k) === -1) {
+                    match = false;
+                    break;
+                }
+            }
+            if (match) {
+                result.push(this);
+            }
+        })
+    } else {
+        $.each(tmp, function () {
+            var options = '', match = false;
+            $.each(this.options, function () {
+                options = options + '|' + this.option.toLowerCase();
+            });
+            var question = this.question.toLowerCase();
+            for (x in params) {
+                var k = params[x].toLowerCase();
+                if (question.indexOf(k) !== -1 || options.indexOf(k) !== -1) {
+                    match = true;
+                    break;
+                }
+            }
+            if (match) {
+                result.push(this);
+            }
+        })
+    }
+    return result;
+});
 Util = (function () {
     check = function (obj) {
         if (obj === undefined)
@@ -135,7 +180,12 @@ Util = (function () {
         check: function (span) {
             var obj = $(span).prev();
             if (!obj.prop('disabled')) {
-                obj.prop('checked', !obj.prop('checked')).trigger('change');
+                var type = obj.attr('type');
+                if (type === 'checkbox') {
+                    obj.prop('checked', !obj.prop('checked')).trigger('change');
+                } else if(type === 'radio') {
+                    obj.prop('checked', true);
+                }
             }
         },
         rndCheck: function () {
