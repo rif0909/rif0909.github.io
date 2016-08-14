@@ -5,15 +5,14 @@
     <title>考試練習</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="http://code.jquery.com/jquery.min.js"></script>
     <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="css/my.css" rel="stylesheet" type="text/css" />
+    <script src="js/jquery.min.js"></script>
     <script src="js/bootstrap.min.js"></script>
     <script src="js/angular.min.js"></script>
     <script src="js/angular-cookies.min.js"></script>
     <script src="js/taffy-min.js"></script>
-    <script src="js/directive.js"></script>
     <script src="js/util.js"></script>
-    <script src="js/questions.js"></script>
     <script>
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -27,26 +26,6 @@
         <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
         <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <style>
-        @media (min-width: 768px) {
-            a[ng-click] {
-                cursor: pointer;
-            }
-        }
-        [ng-cloak]{
-            display:none !important;
-        }
-        span.correctAnswer{
-            color:#f00;
-        }
-        .col-xs-1{
-            padding-right : 13px;
-            padding-left : 13px;
-        }
-        .myHidden{
-            visibility : hidden;
-        }
-    </style>
 </head>
 <body ng-controller="QuizController as quiz">
     <div class="body-wrap">
@@ -138,7 +117,7 @@
                     <div class="modal-body">
                         <span style="color:blue">多個關鍵字請以;(分號)區隔</span>
                         <input type="text" id="keyword" placeholder="請輸入關鍵字" onfocus="$(this).select()"/><br />
-                        <input type="radio" name="keywordRule" id="and" checked="checked" /><span onclick="Util.check(this)">AND</span><input type="radio" name="keywordRule" id="or" style="margin-left:10px"/><span onclick="Util.check(this)">OR</span><br />
+                        <input type="radio" name="keywordRule" id="and" checked="checked" /><span data-check-previous>AND</span><input type="radio" name="keywordRule" id="or" style="margin-left:10px"/><span data-check-previous>OR</span><br />
                         <span id="errmsg2" style="color:red;display:none">以關鍵字查詢無結果</span>
                     </div>
                     <div class="modal-footer">
@@ -259,26 +238,26 @@
             <div class="row">
                 <div class="col-xs-12"><b>一般設定</b></div>
                 <div class="col-xs-6">
-                    <input type="checkbox" id="random" onchange="Util.rndCheck()"/><span onclick="Util.check(this)">隨機排序</span>
+                    <input type="checkbox" id="random" onchange="Util.rndCheck()"/><span data-check-previous>隨機排序</span>
                 </div>
                 <div class="col-xs-6">
-                    <input type="checkbox" id="memorize" /><span onclick="Util.check(this)">記憶進度</span>
+                    <input type="checkbox" id="memorize" /><span data-check-previous>記憶進度</span>
                 </div>
                 <div class="col-xs-6">
-                    <input type="checkbox" id="browse" /><span onclick="Util.check(this)">瀏覽模式</span>
+                    <input type="checkbox" id="browse" /><span data-check-previous>瀏覽模式</span>
                 </div>
                 <div class="col-xs-6">
-                    <input type="checkbox" id="title" /><span onclick="Util.check(this)">顯示題號</span>
+                    <input type="checkbox" id="title" /><span data-check-previous>顯示題號</span>
                 </div>
             </div>
             <div class="row" id="classes" data-setting="quiz.loadCookie()"></div>
             <div class="row">
                 <div class="col-xs-12"><b>題型設定</b></div>
                 <div class="col-xs-4">
-                    <input type="checkbox" id="single"/><span onclick="Util.check(this)">單選</span>
+                    <input type="checkbox" id="single"/><span data-check-previous>單選</span>
                 </div>
                 <div class="col-xs-4">
-                    <input type="checkbox" id="multi"/><span onclick="Util.check(this)">複選</span>
+                    <input type="checkbox" id="multi"/><span data-check-previous>複選</span>
                 </div>
             </div>
             <div class="row">
@@ -296,424 +275,6 @@
             </div>
         </div>
     </div>
-    <script>
-        angular.module("QuizApp", [ 'myDirective','ngCookies'])
-            .controller('QuizController', function ($log, $scope, $cookies) {
-                var that = this;
-                this.correctCount = 0;
-                this.incorrectCount = 0;
-                this.index = -1;
-                this.tab = 'file';
-                this.random = false;
-                this.browse = false;
-                this.title = false;
-                this.hasErrors = false;
-                this.eIndex = -1;
-                this.eMax = -1;
-                this.errMsg = '';
-                this.keyword = [];
-                this.keywordRuleAnd = true;
-                this.toTab = function (tab) {
-                    this.tab = tab;
-                    $('.navbar-toggle').click();
-                };
-                this.jump = function () {
-                    $('#sn').val('');
-                    $('#errmsg').hide();
-                    $('#jump').modal('toggle');
-                    $('.navbar-toggle').click();
-                };
-                this.closeMenu = function () {
-                    $('.navbar-toggle').click();
-                };
-                this.clear = function () {
-                    $('#files').val('');
-                };
-                this.close = function () {
-                    this.tab = this.question ? 'quiz' : 'file';
-                    this.clear();
-                };
-                this.radio = function (index, $event) {
-                    var obj = $("input[name='answer']:eq(" + index + ")");
-                    if (!obj.prop('disabled')) {
-                        obj.prop('checked', true);
-                        this.check($event);
-                    }
-                };
-                this.ckbox = function (index, $event) {
-                    var obj = $("input[name='answer']:eq(" + index + ")");
-                    if (!obj.prop('disabled')) {
-                        obj.prop('checked', !obj.prop('checked'));
-                        this.check($event);
-                    }
-                };
-                this.check = function ($event) {
-                    $event.stopPropagation();
-                    var count = 0;
-                    $("input[name='answer']").each(function () {
-                        var obj = $(this);
-                        if (obj.prop('checked'))
-                            count++;
-                    })
-                    var type = this.question.type.toLowerCase();
-                    this.question.enough = (type === 'single' && count === 1 || type === 'multi' && count > 1);
-                };
-                this.answer = function () {
-                    var type = this.question.type.toLowerCase();
-                    var correct = true;
-                    $("input[name='answer']").each(function (index) {
-                        var obj = $(this);
-                        obj.prop('disabled', true);
-                        correct = correct && !(obj.prop('checked') ^ (obj.attr('value') === 'true'));
-                        that.question.options[index].selected = obj.prop('checked');
-                    })
-                    this.question.answered = true;
-                    this.question.correct = correct;
-                    if (correct) {
-                        this.correctCount++;
-                    } else {
-                        this.incorrectCount++;
-                        this.hasErrors = true;
-                        Questions.setErrors(this.question);
-                    }
-                };
-                this.next = function (n) {
-                    var tmpIndex = this.index + n;
-                    var questions = (this.keyword.length !== 0  ? Questions.search() : Questions.get());
-                    if (tmpIndex === questions.length) {
-                        tmpIndex = 0;
-                        if (this.random) {
-                            Util.shuffle(questions);
-                        }
-                    }
-                    this.index = tmpIndex;
-                    Util.shuffle(questions[this.index].options);
-                    this.question = new Question(questions[this.index]);
-                    var settings = $cookies.get('quiz.settings');
-                    if (settings === undefined) {
-                        settings = Util.getDefaultSettings();
-                    } else {
-                        settings = $.extend(Util.getDefaultSettings(), angular.fromJson(settings));
-                    }
-                    if (settings.memorize) {
-                        settings.position = this.index;
-                        var expires = new Date();
-                        expires.setDate(expires.getDate() + 7);
-                        $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
-                    }
-                };
-                this.jumpTo = function () {
-                    var x = parseInt($('#sn').val(), 10);
-                    if (x >= 1 && x <= this.questions.length) {
-                        this.index = x - 1;
-                        this.next(0);
-                        $('#sn').val('');
-                        $('#errmsg').hide();
-                        $('#jump').modal('toggle');
-                    } else {
-                        $('#sn').val('');
-                        $('#errmsg').show();
-                    }
-                };
-                this.parseFile = function (event) {
-                    var f = event.target.files[0];
-                    var reader = new FileReader();
-                    reader.onload = function (e) {
-                        var data = reader.result.split(";;");
-                        var arr = [];
-                        for (json in data) {
-                            try {
-                                var obj = angular.fromJson(data[json]);
-                                obj.type = obj.type.toLowerCase();
-                                obj.__id = json;
-                            } catch (err) { }
-                            Util.add(arr, obj);
-                        }
-                        if (arr.length !== 0) {
-                            Questions.init(arr);
-                            that.keyword = [];
-                            that.initQuestions();
-                            that.tab = 'quiz';
-                            $('#close').click();
-                        } else {
-                            alert('選擇的檔案內無符合的題目!');
-                        }
-                    }
-                    reader.readAsText(f);
-                };
-                this.save = function () {
-                    if (this.saveCookie($cookies)) {
-                        if (this.keyword.length === 0) {
-                            this.initQuestions();
-                        } else {
-                            this.initKeyword();
-                        }
-                        this.tab = 'quiz';
-                    }
-                };
-                this.loadCookie = function (last) {
-                    var settings = $cookies.get('quiz.settings');
-                    if (settings === undefined) {
-                        settings = Util.getDefaultSettings();
-                    } else {
-                        settings = $.extend(Util.getDefaultSettings(), angular.fromJson(settings));
-                    }
-                    if (settings.random) {
-                        $('#random').prop('checked', settings.random).trigger('change');
-                    } else {
-                        $('#memorize').prop('checked', settings.memorize);
-                    }
-                    $('#browse').prop('checked', settings.browse);
-                    $('#title').prop('checked', settings.title);
-                    $('#single').prop('checked', settings.single);
-                    $('#multi').prop('checked', settings.multi);
-
-                    $('#classes').append('<div class="col-xs-12"><b>類別設定</b></div>');
-                    var classes = Questions.getClasses();
-                    for (var i = 0; i < classes.length; i++) {
-                        $('#classes').append('<div class="col-xs-4" name="xxx"><input type="checkbox" name="class" value="' + classes[i].name + '" /><span onclick="Util.check(this)">' + classes[i].name + '[' + classes[i].count + ']</span></div>')
-                    }
-
-                    if (typeof settings.class === 'boolean') {
-                        $('input[name="class"]').each(function () {
-                            $(this).prop('checked', true);
-                        });
-                    } else if (typeof settings.class === 'string') {
-                        $('input[name="class"]').each(function () {
-                            var obj = $(this);
-                            if (settings.class.indexOf(obj.val()) !== -1) {
-                                obj.prop('checked', true);
-                            }
-                        });
-                    }
-                };
-                this.saveCookie = function () {
-                    var settings = Util.getDefaultSettings();
-                    settings.random = $('#random').prop('checked');
-                    settings.memorize = $('#memorize').prop('checked');
-                    settings.browse = $('#browse').prop('checked');
-                    settings.title = $('#title').prop('checked');
-                    settings.single = $('#single').prop('checked');
-                    settings.multi = $('#multi').prop('checked');
-
-                    if (settings.random) {
-                        settings.position = 0;
-                    } else {
-                        settings.position = this.index;
-                    }
-
-                    var str = '';
-                    $('input[name="class"]').each(function () {
-                        var obj = $(this);
-                        if (obj.prop('checked')) {
-                            str += (obj.val() + ',');
-                        }
-                    });
-                    if (str === '') {
-                        this.errMsg = '請至少選擇一種類別';
-                        $('#warning').modal('toggle');
-                        return false;
-                    } else if (!settings.single && !settings.multi) {
-                        this.errMsg = '請至少選擇一種題型';
-                        $('#warning').modal('toggle');
-                        return false;
-                    } else {
-                        settings.class = str.substring(0, str.length - 1);
-                        var params = {};
-                        params.class = settings.class.split(",");
-                        if (settings.single && !settings.multi) {
-                            params.type = 'single';
-                        } else if (settings.multi && !settings.single) {
-                            params.type = 'multi';
-                        }
-                        var arr = [];
-                        if (this.keyword.length === 0){
-                            arr = Questions.get(params);
-                            if(arr.length === 0){ 
-                                this.errMsg = '選擇的類別及題型未包含任何題目';
-                                $('#warning').modal('toggle');
-                                return false;
-                            }else{
-                                Questions.set(arr);
-                            }
-                        } else {
-                            arr = Questions.search(params,this.keyword,this.keywordRuleAnd);
-                            if(arr.length === 0){
-                                this.errMsg = '選擇的類別及題型未包含任何題目';
-                                $('#warning').modal('toggle');
-                                return false;
-                            }else{
-                                Questions.setSearched(arr);
-                            }
-                        }
-                    }
-                    var expires = new Date();
-                    expires.setDate(expires.getDate() + 7);
-                    $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
-                    return true;
-                };
-                this.initQuestions = function () {
-                    var settings = $cookies.get('quiz.settings');
-                    if (settings === undefined) {
-                        settings = Util.getDefaultSettings();
-                    } else {
-                        settings = $.extend(Util.getDefaultSettings(),angular.fromJson(settings));
-                    }
-                    var params = {};
-                    if (typeof settings.class === 'boolean') {
-                        params.class = { '!is': 'undefined' };
-                    } else if (typeof settings.class === 'string') {
-                        params.class = settings.class.split(',');
-                    }
-                    if (settings.single && !settings.multi) {
-                        params.type = 'single';
-                    } else if (settings.multi && !settings.single) {
-                        params.type = 'multi';
-                    }
-                    var arr = Questions.get(params);
-                    if (arr.length === 0) {
-                        Questions.set(Questions.get({ class: { '!is': 'undefined' } }));
-                        $.extend(settings, { class: true, single: true, multi: true });
-                        var expires = new Date();
-                        expires.setDate(expires.getDate() + 7);
-                        $cookies.put('quiz.settings', angular.toJson(settings), { 'expires': expires });
-                    } else {
-                        Questions.set(arr);
-                    }
-                    this.random = settings.random;
-                    this.browse = settings.browse;
-                    this.title = settings.title;
-                    this.questions = { length: Questions.get().length };
-                    if (settings.random) {
-                        Util.shuffle(Questions.get());
-                        this.index = 0;
-                    } else {
-                        Questions.get().sort(function (a, b) {
-                            return a.__id - b.__id;
-                        });
-                        if (settings.memorize && settings.position < this.questions.length) {
-                            this.index = settings.position;
-                        } else {
-                            this.index = 0;
-                        }
-                    }
-                    this.next(0);
-                };
-                this.toError = function () {
-                    this.tab = 'error';
-                    $('.navbar-toggle').click();
-                    this.eMax = Questions.getErrors().length - 1;
-                    this.eIndex = this.eMax;
-                    this.nextError(0);
-                };
-                this.nextError = function (n) {
-                    var tmpIndex = this.eIndex + n;
-                    if (tmpIndex === Questions.getErrors().length) {
-                        tmpIndex = 0;
-                    }
-                    this.eIndex = tmpIndex;
-                    this.question = Questions.getErrors()[this.eIndex];
-                };
-                this.closeError = function () {
-                    this.tab = 'quiz';
-                    this.next(0);
-                };
-                this.clearError = function () {
-                    Questions.clearErrors();
-                    this.closeError();
-                    this.hasErrors = false;
-                    $('.navbar-toggle').click();
-                };
-                this.search = function () {
-                    $('#errmsg2').hide();
-                    $('#keyword').val(this.keyword.join(';'));
-                    if (this.keywordRuleAnd) {
-                        $('#and').prop('checked', true);
-                    } else {
-                        $('#or').prop('checked', true);
-                    }
-                    $('#search').modal('toggle');
-                    $('.navbar-toggle').click();
-                };
-                this.searchFor = function () {
-                    var arr = $('#keyword').val().toLowerCase().split(';');
-                    var keyword = $.grep(arr, function (n,i) {
-                        return n !== '' && arr.indexOf(n) === i;
-                    });
-                    if (keyword.length !== 0) {
-                        var tmp = this.keyword;
-                        var tmpRule = this.keywordRuleAnd;
-                        this.keyword = keyword;
-                        this.keywordRuleAnd = $('#and').prop('checked');
-                        if (this.initKeyword()) {
-                            $('#search').modal('toggle');
-                        } else {
-                            this.keyword = tmp;
-                            this.keywordRuleAnd = tmpRule;
-                            $('#keyword').val(this.keyword.join(';'));
-                            if (this.keywordRuleAnd) {
-                                $('#and').prop('checked', true);
-                            } else {
-                                $('#or').prop('checked', true);
-                            }
-                        }
-                    } else if (this.keyword.length !== 0) {
-                        this.keyword = keyword;
-                        this.keywordRuleAnd = $('#and').prop('checked');
-                        this.initQuestions();
-                        $('#search').modal('toggle');
-                    } else {
-                        this.keywordRuleAnd = $('#and').prop('checked');
-                        $('#search').modal('toggle');
-                    }
-                };
-                this.initKeyword = function () {
-                    var settings = $cookies.get('quiz.settings');
-                    if (settings === undefined) {
-                        settings = Util.getDefaultSettings();
-                    } else {
-                        settings = $.extend(Util.getDefaultSettings(), angular.fromJson(settings));
-                    }
-                    var params = {};
-                    if (typeof settings.class === 'boolean') {
-                        params.class = { '!is': 'undefined' };
-                    } else if (typeof settings.class === 'string') {
-                        params.class = settings.class.split(',');
-                    }
-                    if (settings.single && !settings.multi) {
-                        params.type = 'single';
-                    } else if (settings.multi && !settings.single) {
-                        params.type = 'multi';
-                    }
-                    var arr = Questions.search(params, this.keyword, $('#and').prop('checked'));
-                    if (arr.length === 0) {
-                        $('#errmsg2').show();
-                        return false;
-                    } else {
-                        $('#errmsg2').hide();
-                        Questions.setSearched(arr);
-                    }
-                    this.random = settings.random;
-                    this.browse = settings.browse;
-                    this.title = settings.title;
-                    this.questions = { length: Questions.search().length };
-                    if (settings.random) {
-                        Util.shuffle(Questions.search());
-                        this.index = 0;
-                    } else {
-                        Questions.search().sort(function (a, b) {
-                            return a.__id - b.__id;
-                        });
-                        if (settings.memorize && settings.position < this.questions.length) {
-                            this.index = settings.position;
-                        } else {
-                            this.index = 0;
-                        }
-                    }
-                    this.next(0);
-                    return true;
-                };
-            })
-    </script>
+    <script src="js/QuizApp.js"></script>
 </body>
 </html>

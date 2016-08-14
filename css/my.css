@@ -1,0 +1,18 @@
+﻿@media (min-width: 768px) {
+    a[ng-click] {
+        cursor: pointer;
+    }
+}
+[ng-cloak] {
+    display: none !important;
+}
+span.correctAnswer {
+    color: #f00;
+}
+.col-xs-1 {
+    padding-right: 13px;
+    padding-left: 13px;
+}
+.myHidden {
+    visibility: hidden;
+}
