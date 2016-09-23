@@ -40,6 +40,7 @@
                             <span class="icon-bar"></span>
                         </button>
                         <a class="navbar-brand" href="#"><img src="images/img2.jpg" style="height:30px" />考試練習</a>
+                        <a id="dl" style="display:none"></a>
                     </div>
                     <div class="collapse navbar-collapse" id="functions">
                         <ul class="nav navbar-nav navbar-right">
@@ -47,6 +48,7 @@
                             <li ng-show="quiz.questions && quiz.tab==='quiz'"><a ng-click="quiz.search()">題庫搜尋</a></li>
                             <li ng-show="quiz.questions && quiz.tab==='quiz' && !quiz.random"><a ng-click="quiz.jump()">跳至題號</a></li>
                             <li ng-show="quiz.hasErrors && quiz.tab !== 'error'"><a ng-click="quiz.toError()">檢視錯誤</a></li>
+                            <li ng-show="quiz.tab === 'error'"><a ng-click="quiz.confirm()">儲存錯誤</a></li>
                             <li ng-show="quiz.tab === 'error'"><a ng-click="quiz.clearError()">清除錯誤</a></li>
                             <li ng-show="quiz.questions && quiz.tab !== 'error'"><a ng-click="quiz.toTab('setting')">設　　定</a></li>
                             <li><a data-toggle="modal" data-target="#about" ng-click="quiz.closeMenu()">關　　於</a></li>
@@ -96,11 +98,28 @@
                         請輸入題號：
                     </div>
                     <div class="modal-body">
-                        <input type="number" id="sn" step="1" min="1" pattern="\d*" placeholder="1~{{quiz.questions.length}}"/>
+                        <input type="number" id="sn" step="1" min="1" pattern="\d*" placeholder="1~{{quiz.questions.length}}" />
                         <span id="errmsg" style="color:red;display:none">請輸入1~{{quiz.questions.length}}</span>
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-default" ng-click="quiz.jumpTo()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="confirm" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        確定要儲存回答錯誤的題目嗎？
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" ng-click="quiz.saveError()">確定</button>
                         <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                     </div>
                 </div>
@@ -116,8 +135,8 @@
                     </div>
                     <div class="modal-body">
                         <span style="color:blue">多個關鍵字請以;(分號)區隔</span>
-                        <input type="text" id="keyword" placeholder="請輸入關鍵字" onfocus="$(this).select()"/><br />
-                        <input type="radio" name="keywordRule" id="and" checked="checked" /><span data-check-previous>AND</span><input type="radio" name="keywordRule" id="or" style="margin-left:10px"/><span data-check-previous>OR</span><br />
+                        <input type="text" id="keyword" placeholder="請輸入關鍵字" onfocus="$(this).select()" /><br />
+                        <input type="radio" name="keywordRule" id="and" checked="checked" /><span data-check-previous>AND</span><input type="radio" name="keywordRule" id="or" style="margin-left:10px" /><span data-check-previous>OR</span><br />
                         <span id="errmsg2" style="color:red;display:none">以關鍵字查詢無結果</span>
                     </div>
                     <div class="modal-footer">
@@ -136,6 +155,9 @@
                 </div>
                 <div class="col-xs-9">
                     <input type="file" id="files" custom-on-change="quiz.parseFile" ng-click="quiz.clear()" />
+                </div>
+                <div class="col-xs-12" style="padding-top:10px">
+                    <span style="color:red"><b>行內全球資訊網資訊處區已更新內含校勘對照表之題庫檔案</b></span>
                 </div>
             </div>
         </div>
@@ -169,14 +191,14 @@
                         <div ng-switch-when="single">
                             <ul class="list-group">
                                 <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.radio($index,$event)">
-                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse"/><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
                         <div ng-switch-when="multi">
                             <ul class="list-group">
                                 <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.ckbox($index,$event)">
-                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse"/><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
@@ -238,7 +260,7 @@
             <div class="row">
                 <div class="col-xs-12"><b>一般設定</b></div>
                 <div class="col-xs-6">
-                    <input type="checkbox" id="random" onchange="Util.rndCheck()"/><span data-check-previous>隨機排序</span>
+                    <input type="checkbox" id="random" onchange="Util.rndCheck()" /><span data-check-previous>隨機排序</span>
                 </div>
                 <div class="col-xs-6">
                     <input type="checkbox" id="memorize" /><span data-check-previous>記憶進度</span>
@@ -254,10 +276,10 @@
             <div class="row">
                 <div class="col-xs-12"><b>題型設定</b></div>
                 <div class="col-xs-4">
-                    <input type="checkbox" id="single"/><span data-check-previous>單選</span>
+                    <input type="checkbox" id="single" /><span data-check-previous>單選</span>
                 </div>
                 <div class="col-xs-4">
-                    <input type="checkbox" id="multi"/><span data-check-previous>複選</span>
+                    <input type="checkbox" id="multi" /><span data-check-previous>複選</span>
                 </div>
             </div>
             <div class="row">
