@@ -12,6 +12,7 @@
     <script src="js/angular-cookies.min.js"></script>
     <script src="js/taffy-min.js"></script>
     <script src="js/util.js"></script>
+    <script src="js/list.js"></script>
     <script>
         (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
         (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
@@ -97,7 +98,7 @@
                         請輸入題號：
                     </div>
                     <div class="modal-body">
-                        <input type="number" id="sn" step="1" min="1" pattern="\d*" placeholder="1~{{quiz.questions.length}}"/>
+                        <input type="number" id="sn" step="1" min="1" pattern="\d*" placeholder="1~{{quiz.questions.length}}" />
                         <span id="errmsg" style="color:red;display:none">請輸入1~{{quiz.questions.length}}</span>
                     </div>
                     <div class="modal-footer">
@@ -151,8 +152,8 @@
                     </div>
                     <div class="modal-body">
                         <span style="color:blue">多個關鍵字請以;(分號)區隔</span>
-                        <input type="text" id="keyword" placeholder="請輸入關鍵字" onfocus="$(this).select()"/><br />
-                        <input type="radio" name="keywordRule" id="and" checked="checked" /><span data-check-previous>AND</span><input type="radio" name="keywordRule" id="or" style="margin-left:10px"/><span data-check-previous>OR</span><br />
+                        <input type="text" id="keyword" placeholder="請輸入關鍵字" onfocus="$(this).select()" /><br />
+                        <input type="radio" name="keywordRule" id="and" checked="checked" /><span data-check-previous>AND</span><input type="radio" name="keywordRule" id="or" style="margin-left:10px" /><span data-check-previous>OR</span><br />
                         <span id="errmsg2" style="color:red;display:none">以關鍵字查詢無結果</span>
                     </div>
                     <div class="modal-footer">
@@ -170,10 +171,16 @@
         <div ng-cloak class="container ng-cloak" ng-switch-when="file">
             <div class="row">
                 <div class="col-xs-3">
-                    <button id="close" ng-show="quiz.questions" ng-click="quiz.close()">取消</button>
+                    <button class="btn btn-default" id="close" ng-show="quiz.questions" ng-click="quiz.close()">取消</button>
                 </div>
                 <div class="col-xs-9">
-                    <input type="file" id="files" custom-on-change="quiz.parseFile" ng-click="quiz.clear()" style="width: 200px"/>
+                    <label for="files" class="btn btn-default">請點此讀取題庫檔</label>
+                    <input type="file" id="files" custom-on-change="quiz.parseFile" ng-click="quiz.clear()" style="display:none" />
+                </div>
+                <div class="col-xs-12" style="padding-top:10px">
+                    <select id="select" class="form-control" ng-change="quiz.getFile()" ng-model="quiz.file" ng-options="file.value as file.text group by file.category for file in quiz.files">
+                        <option value="">或點此選擇題庫檔</option>
+                    </select>
                 </div>
             </div>
         </div>
@@ -207,14 +214,14 @@
                         <div ng-switch-when="single">
                             <ul class="list-group">
                                 <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.radio($index,$event)">
-                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse"/><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
                         <div ng-switch-when="multi">
                             <ul class="list-group">
                                 <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.ckbox($index,$event)">
-                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse"/><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
@@ -276,7 +283,7 @@
             <div class="row">
                 <div class="col-xs-12"><b>一般設定</b></div>
                 <div class="col-xs-6">
-                    <input type="checkbox" id="random" onchange="Util.rndCheck()"/><span data-check-previous>隨機排序</span>
+                    <input type="checkbox" id="random" onchange="Util.rndCheck()" /><span data-check-previous>隨機排序</span>
                 </div>
                 <div class="col-xs-6">
                     <input type="checkbox" id="memorize" /><span data-check-previous>記憶進度</span>
@@ -292,10 +299,10 @@
             <div class="row">
                 <div class="col-xs-12"><b>題型設定</b></div>
                 <div class="col-xs-4">
-                    <input type="checkbox" id="single"/><span data-check-previous>單選</span>
+                    <input type="checkbox" id="single" /><span data-check-previous>單選</span>
                 </div>
                 <div class="col-xs-4">
-                    <input type="checkbox" id="multi"/><span data-check-previous>複選</span>
+                    <input type="checkbox" id="multi" /><span data-check-previous>複選</span>
                 </div>
             </div>
             <div class="row">
