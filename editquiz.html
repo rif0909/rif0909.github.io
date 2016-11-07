@@ -1,0 +1,135 @@
+﻿<!DOCTYPE html>
+<html lang="zh-tw">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>題庫編輯器</title>
+    <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        var quiz = JSON.parse(localStorage.getItem("edit.quiz")) || [];
+        $(document).ready(function () {
+            $('#add').click(function () {
+                if ($('input[type=checkbox]:checked').length == 0) {
+                    if ($('#answer').val().length > 0) {
+                        $('#checkbox' + parseInt($('#answer').val().charAt(0))).prop('checked', true);
+                        $('#answer').val($('#answer').val().substring(1));
+                    } else {
+                        alert('未選擇答案');
+                        return;
+                    }
+                }
+                var arr = [];
+                $('.option').each(function (i) {
+                    var tmp = $(this);
+                    if (tmp.val()) {
+                        arr.push({
+                            option: $(this).val(),
+                            answer: $('#checkbox' + (i+1)).prop('checked')
+                        })
+                    }
+                })
+                quiz.push({
+                    class: $('#class').val(),
+                    sn: ('000' + $('#sn').val()).slice(-3),
+                    type: $('input[type=checkbox]:checked').length == 1 ? 'single' : 'multi',
+                    question: $('#question').val(),
+                    options: arr,
+                    remark:$('#remark').val()
+                })
+                localStorage.setItem('edit.quiz', JSON.stringify(quiz));
+                $('#question').val('');
+                $('.option').val('');
+                $('input[type=checkbox]').prop('checked', false);
+                $('#remark').val('');
+                $('#sn').val(parseInt($('#sn').val()) + 1)
+                $('#question').focus();
+            })
+            $('#dl').click(function () {
+                var text = '';
+                $.each(quiz, function () {
+                    text += JSON.stringify(this);
+                    text += '\r\n';
+                })
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+                element.setAttribute('download', 'quiz.txt');
+                element.style.display = 'none';
+                document.body.appendChild(element);
+                element.click();
+                document.body.removeChild(element);
+                localStorage.removeItem("edit.quiz");
+            })
+            $('#class').focus();
+        })
+    </script>
+</head>
+<body>
+<div>
+    <div class="row">
+        <div class="col-xs-2">
+            類別
+        </div>
+        <div class="col-xs-10">
+            <input type="text" id="class" size="100" />
+        </div>
+        <div class="col-xs-2">
+            答案
+        </div>
+        <div class="col-xs-10">
+            <input type="text" id="answer" size="100" />
+        </div>
+        <div class="col-xs-2">
+            序號
+        </div>
+        <div class="col-xs-10">
+            <input type="number" id="sn" size="10" value="1"/>
+        </div>
+        <div class="col-xs-2">
+            題目
+        </div>
+        <div class="col-xs-10">
+            <textarea id="question" cols="100" rows="3" tabindex="1"></textarea>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-2">
+            答案
+        </div>
+        <div class="col-xs-10">
+            <input type="checkbox" id="checkbox1"/><input type="text" class="option" id="options1" size="100" tabindex="2"/>
+        </div>
+        <div class="col-xs-2">
+        </div>
+        <div class="col-xs-10">
+            <input type="checkbox" id="checkbox2"/><input type="text" class="option" id="options2" size="100" tabindex="3"/>
+        </div>
+        <div class="col-xs-2">
+        </div>
+        <div class="col-xs-10">
+            <input type="checkbox" id="checkbox3"/><input type="text" class="option" id="options3" size="100" tabindex="4"/>
+        </div>
+        <div class="col-xs-2">
+        </div>
+        <div class="col-xs-10">
+            <input type="checkbox" id="checkbox4"/><input type="text" class="option" id="options4" size="100" tabindex="5"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-2">
+            備註
+        </div>
+        <div class="col-xs-10">
+            <input type="text" id="remark" size="100" tabindex="6"/>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <button class="btn btn-primary" id="add" tabindex="7">新增題目</button>
+            <button class="btn btn-primary" id="dl">下載題庫</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
