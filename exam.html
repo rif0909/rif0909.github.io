@@ -201,7 +201,7 @@
                 <div class="col-xs-12">
                     <span style="font-size:x-large" ng-bind="'['+quiz.question.class+' '+quiz.question.sn+']'" ng-class="{'myHidden':!quiz.title}"></span>
                     <button class="btn btn-primary" ng-show="!quiz.question.answered && !quiz.browse" ng-click="quiz.answer()" ng-disabled="!quiz.question.enough">看答案</button>
-                    <button class="btn btn-primary" ng-show="quiz.browse" ng-class="{'myHidden': quiz.index==0}" ng-click="quiz.next(-1)">上一題</button>
+                    <button class="btn btn-primary" ng-show="quiz.browse" ng-disabled="quiz.index==0" ng-click="quiz.next(-1)">上一題</button>
                     <button class="btn btn-primary" ng-show="quiz.question.answered || quiz.browse" ng-click="quiz.next(1)">下一題</button>
                 </div>
             </div>
