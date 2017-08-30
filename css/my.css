@@ -16,3 +16,17 @@ span.correctAnswer {
 .myHidden {
     visibility: hidden;
 }
+
+.flag {
+    background: url('../images/filled.png') transparent;
+    height: 20px;
+    width: 20px;
+    border: none;
+}
+
+.unflag {
+    background: url('../images/unfilled.png') transparent;
+    height: 20px;
+    width: 20px;
+    border: none;
+}
