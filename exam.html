@@ -53,7 +53,7 @@
                             <li ng-show="quiz.tab === 'error'"><a ng-click="quiz.clearError()">清除錯誤</a></li>
                             <li ng-show="quiz.tab === 'flag'"><a ng-click="quiz.saveFlag()">儲存標記</a></li>
                             <li ng-show="quiz.tab === 'flag'"><a ng-click="quiz.clearFlag()">清除標記</a></li>
-                            <li ng-show="quiz.questions && (quiz.tab === 'quiz' || quiz.tab === 'flag')"><a ng-click="quiz.toTab('setting')">設　　定</a></li>
+                            <li ng-show="quiz.questions && quiz.tab === 'quiz'"><a ng-click="quiz.toTab('setting')">設　　定</a></li>
                             <li><a data-toggle="modal" data-target="#about" ng-click="quiz.closeMenu()">關　　於</a></li>
                         </ul>
                     </div>
