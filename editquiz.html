@@ -9,12 +9,23 @@
     <script src="js/bootstrap.min.js"></script>
     <script type="text/javascript">
         var quiz = JSON.parse(localStorage.getItem("edit.quiz")) || [];
+        var NUMBER = '０１２３４５６７８９';
         $(document).ready(function () {
             $('#add').click(function () {
                 if ($('input[type=checkbox]:checked').length == 0) {
                     if ($('#answer').val().length > 0) {
-                        $('#checkbox' + parseInt($('#answer').val().charAt(0))).prop('checked', true);
-                        $('#answer').val($('#answer').val().substring(1));
+                        var ch = $('#answer').val().charAt(0);
+                        var ans = parseInt(ch);
+                        if(isNaN(ans)){
+                            ans = NUMBER.indexOf(ch);
+                        }
+                        if (ans != -1) {
+                            $('#checkbox' + ans).prop('checked', true);
+                            $('#answer').val($('#answer').val().substring(1));
+                        } else {
+                            alert('答案非數字');
+                            return;
+                        }
                     } else {
                         alert('未選擇答案');
                         return;
