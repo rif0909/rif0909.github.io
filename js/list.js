@@ -11,9 +11,9 @@
     { value: '01026', text: '第26期', category: '銀行內部控制與內部稽核測驗' },
     { value: '02025', text: '第25期', category: '初階外匯人員專業能力測驗' },
     { value: '02024', text: '第24期', category: '初階外匯人員專業能力測驗' },
-    { value: '03007', text: '第7屆', category: '風險管理基本能力測驗' }
-    { value: '03006', text: '第6屆', category: '風險管理基本能力測驗' }
-    { value: '03005', text: '第5屆', category: '風險管理基本能力測驗' }
+    { value: '03007', text: '第7屆', category: '風險管理基本能力測驗' },
+    { value: '03006', text: '第6屆', category: '風險管理基本能力測驗' },
+    { value: '03005', text: '第5屆', category: '風險管理基本能力測驗' },
     { value: '03004', text: '第4屆', category: '風險管理基本能力測驗' },
     { value: '03003', text: '第3屆', category: '風險管理基本能力測驗' },
     { value: '03002', text: '第2屆', category: '風險管理基本能力測驗' },
