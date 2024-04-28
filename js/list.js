@@ -18,5 +18,6 @@
     { value: '03004', text: '第4屆', category: '風險管理基本能力測驗' },
     { value: '03003', text: '第3屆', category: '風險管理基本能力測驗' },
     { value: '03002', text: '第2屆', category: '風險管理基本能力測驗' },
-    { value: '03001', text: '第1屆', category: '風險管理基本能力測驗' }
+    { value: '03001', text: '第1屆', category: '風險管理基本能力測驗' },
+    { value: '04001', text: '網路通訊專業人員', category: 'ITE資訊專業人員鑑定' }
 ]
