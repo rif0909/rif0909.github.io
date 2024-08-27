@@ -1,0 +1,409 @@
+﻿<!DOCTYPE html>
+<html lang="zh-tw" ng-app="QuizApp" style="font-size:100%">
+<head>
+    <title>考試練習Beta2</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="msapplication-TileColor" content="#da532c">
+    <meta name="theme-color" content="#ffffff">
+    <link href="css/bootstrap.css" rel="stylesheet" type="text/css" />
+    <link href="css/my.css" rel="stylesheet" type="text/css" />
+    <link rel="apple-touch-icon" sizes="76x76" href="/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="manifest" href="/site.webmanifest">
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#5bbad5">
+    <script src="js/jquery.min.js"></script>
+    <script src="js/bootstrap.min.js"></script>
+    <script src="js/angular.min.js"></script>
+    <script src="js/angular-cookies.min.js"></script>
+    <script src="js/taffy-min.js"></script>
+    <script src="js/util.js"></script>
+    <script src="js/list.js"></script>
+    <!--[if lt IE 9]>
+        <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+        <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+<body ng-controller="QuizController as quiz" style="font-size:1rem">
+    <div class="body-wrap">
+        <div class="container">
+            <nav class="navbar navbar-inverse" role="navigation">
+                <div class="container-fluid">
+                    <div class="navbar-header">
+                        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#functions">
+                            <span class="sr-only">Toggle navigation</span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                            <span class="icon-bar"></span>
+                        </button>
+                        <a class="navbar-brand" href="#"><img src="images/img2.jpg" style="height:30px" />考試練習</a>
+                        <a id="dl" style="display:none"></a>
+                    </div>
+                    <div class="collapse navbar-collapse" id="functions">
+                        <ul class="nav navbar-nav navbar-right">
+                            <li><a ng-show="quiz.tab === 'quiz'" ng-click="quiz.toTab('file')">讀取題庫</a></li>
+                            <li ng-show="quiz.questions && quiz.tab==='quiz'"><a ng-click="quiz.search()">題庫搜尋</a></li>
+                            <li ng-show="quiz.questions && quiz.tab==='quiz' && !quiz.random"><a ng-click="quiz.jump()">跳至題號</a></li>
+                            <li ng-show="quiz.hasFlags && quiz.tab==='quiz'"><a ng-click="quiz.toFlag()">檢視標記</a></li>
+                            <li ng-show="quiz.hasErrors && quiz.tab==='quiz'"><a ng-click="quiz.toError()">檢視錯誤</a></li>
+                            <li ng-show="quiz.tab === 'error'"><a ng-click="quiz.saveError()">儲存錯誤</a></li>
+                            <li ng-show="quiz.tab === 'error'"><a ng-click="quiz.clearError()">清除錯誤</a></li>
+                            <li ng-show="quiz.tab === 'flag'"><a ng-click="quiz.saveFlag()">儲存標記</a></li>
+                            <li ng-show="quiz.tab === 'flag'"><a ng-click="quiz.clearFlag()">清除標記</a></li>
+                            <li ng-show="quiz.questions && quiz.tab === 'quiz'"><a ng-click="quiz.toTab('setting')">設　　定</a></li>
+                            <li><a data-toggle="modal" data-target="#about" ng-click="quiz.closeMenu()">關　　於</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+        </div>
+        <div class="modal fade" id="about" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <img src="images/img2.jpg" />
+                    </div>
+                    <div class="modal-body">
+                        Any suggestions please mail to <a href="mailto:rif0909@gmail.com">rif0909@gmail.com</a>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="warning" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-danger">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <img src="images/warning.png" />
+                    </div>
+                    <div class="modal-body" ng-bind="quiz.errMsg"></div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">關閉</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="jump" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        請輸入題號：
+                    </div>
+                    <div class="modal-body">
+                        <input type="number" id="sn" step="1" min="1" pattern="\d*" placeholder="1~{{quiz.questions.length}}" />
+                        <span id="errmsg" style="color:red;display:none">請輸入1~{{quiz.questions.length}}</span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" ng-click="quiz.jumpTo()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="confirm" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        確定要儲存答錯的題目嗎？
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" ng-click="quiz.confirmSaveError()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="clearError" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        確定要清除答錯的題目嗎？
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" ng-click="quiz.confirmClearError()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="confirmFlag" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        確定要儲存標記的題目嗎？
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" ng-click="quiz.confirmSaveFlag()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="clearFlag" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        確定要清除標記的題目嗎？
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" ng-click="quiz.confirmClearFlag()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="search" role="dialog">
+            <div class="modal-dialog modal-sm">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header alert alert-info">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        請輸入關鍵字：
+                    </div>
+                    <div class="modal-body">
+                        <span style="color:blue">多個關鍵字請以;(分號)區隔</span>
+                        <input type="text" id="keyword" placeholder="請輸入關鍵字" autocomplete="off" onfocus="$(this).select()" /><br />
+                        <input type="radio" name="keywordRule" id="and" checked="checked" /><span data-check-previous>AND</span><input type="radio" name="keywordRule" id="or" style="margin-left:10px" /><span data-check-previous>OR</span><br />
+                        <span id="errmsg2" style="color:red;display:none">以關鍵字查詢無結果</span>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" ng-click="quiz.searchFor()">確定</button>
+                        <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div ng-switch="quiz.tab">
+        <div ng-cloak class="container ng-cloak" ng-switch-when="init">
+            <div class="col-xs-12" data-setting="quiz.init()">Loading...</div>
+        </div>
+        <div ng-cloak class="container ng-cloak" ng-switch-when="file">
+            <div class="row">
+                <div class="col-xs-3">
+                    <button class="btn btn-default" id="close" ng-show="quiz.questions" ng-click="quiz.close()">取消</button>
+                </div>
+                <div class="col-xs-9">
+                    <label for="files" class="btn btn-default">請點此讀取題庫檔</label>
+                    <input type="file" id="files" custom-on-change="quiz.parseFile" ng-click="quiz.clear()" style="display:none" />
+                </div>
+                <div class="col-xs-12" style="padding-top:10px">
+                    <select id="select" class="form-control" ng-change="quiz.getFile()" ng-model="quiz.file" ng-options="file.value as file.text group by file.category for file in quiz.files">
+                        <option value="">或點此選擇題庫檔</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div ng-cloak class="container ng-cloak" ng-switch-when="quiz">
+            <div class="row">
+                <div class="col-xs-1 text-center">
+                    <img src="images/o.png" />
+                </div>
+                <div class="col-xs-2" ng-bind="quiz.correctCount"></div>
+                <div class="col-xs-6 text-center" ng-bind="(quiz.index+1) + ' / ' + quiz.questions.length">
+                </div>
+                <div class="col-xs-1 text-center">
+                    <img src="images/x.png" />
+                </div>
+                <div class="col-xs-2" ng-bind="quiz.incorrectCount"></div>
+            </div>
+            <div class="row" style="padding-top:10px">
+                <div class="col-xs-12">
+                    <button ng-class="{flag:quiz.question.flag,unflag:!quiz.question.flag}" ng-click="quiz.switchFlag()"></button>
+                    <span style="font-size:x-large" ng-bind="'['+quiz.question.class+' '+quiz.question.sn+']'" ng-show="quiz.title"></span>
+                    <button class="btn btn-primary" ng-show="!quiz.question.answered && !quiz.browse" ng-click="quiz.answer()" ng-disabled="!quiz.question.enough">看答案</button>
+                    <button class="btn btn-primary" ng-show="quiz.browse" ng-disabled="quiz.index==0" ng-click="quiz.next(-1)">上一題</button>
+                    <button class="btn btn-primary" ng-show="quiz.question.answered || quiz.browse" ng-click="quiz.next(1)">下一題</button>
+                </div>
+            </div>
+            <div class="row" style="padding-top:10px">
+                <div class="col-xs-12" ng-bind="quiz.question.question">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div ng-switch="quiz.question.type.toLowerCase()">
+                        <div ng-switch-when="single">
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.radio($index,$event)">
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div ng-switch-when="multi">
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.ckbox($index,$event)">
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12" ng-bind="quiz.question.remark" ng-show="quiz.remark"></div>
+            </div>
+            <div ng-show="quiz.question.answered" ng-switch="quiz.question.correct">
+                <div ng-switch-when="true">
+                    <img id="img1" style="position:absolute;top:30%;left:40%;" src="images/o64.png" />
+                </div>
+                <div ng-switch-when="false">
+                    <img id="img2" style="position:absolute;top:30%;left:40%;" src="images/x64.png" />
+                    <img id="img3" style="position:absolute;top:30%;left:40%;" src="images/x64.png" />
+                </div>
+            </div>
+        </div>
+        <div ng-cloak class="container ng-cloak" ng-switch-when="error">
+            <div class="row" style="padding-top:10px">
+                <div class="col-xs-12">
+                    <button class="btn btn-primary" ng-click="quiz.toQuiz()">關　閉</button>
+                    <button class="btn btn-primary" ng-disabled="quiz.eIndex <= 0" ng-click="quiz.nextError(-1)">上一題</button>
+                    <button class="btn btn-primary" ng-disabled="quiz.eIndex >= quiz.eMax" ng-click="quiz.nextError(1)">下一題</button>
+                </div>
+                <div class="col-xs-12">
+                    <span style="font-size:x-large" ng-bind="'['+quiz.question.class+' '+quiz.question.sn+']'"></span>
+                </div>
+            </div>
+            <div class="row" style="padding-top:10px">
+                <div class="col-xs-12" ng-bind="quiz.question.question">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div ng-switch="quiz.question.type.toLowerCase()">
+                        <div ng-switch-when="single">
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options">
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-checked="option.selected" ng-disabled="true" /><span ng-class="{correctAnswer:option.answer}" ng-bind="option.option"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div ng-switch-when="multi">
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options">
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-checked="option.selected" ng-disabled="true" /><span ng-class="{correctAnswer:option.answer}" ng-bind="option.option"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12" ng-bind="quiz.question.remark"></div>
+            </div>
+        </div>
+        <div ng-cloak class="container ng-cloak" ng-switch-when="flag">
+            <div class="row" style="padding-top:10px">
+                <div class="col-xs-12">
+                    <button class="btn btn-primary" ng-click="quiz.toQuiz()">關　閉</button>
+                    <button class="btn btn-primary" ng-disabled="quiz.fIndex <= 0" ng-click="quiz.nextFlag(-1)">上一題</button>
+                    <button class="btn btn-primary" ng-disabled="quiz.fIndex >= quiz.fMax" ng-click="quiz.nextFlag(1)">下一題</button>
+                </div>
+                <div class="col-xs-12">
+                    <button ng-class="{flag:quiz.question.flag,unflag:!quiz.question.flag}" ng-click="quiz.switchFlag()"></button>
+                    <span style="font-size:x-large" ng-bind="'['+quiz.question.class+' '+quiz.question.sn+']'"></span>
+                </div>
+            </div>
+            <div class="row" style="padding-top:10px">
+                <div class="col-xs-12" ng-bind="quiz.question.question">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <div ng-switch="quiz.question.type.toLowerCase()">
+                        <div ng-switch-when="single">
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options">
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-checked="option.answer" ng-disabled="true" /><span ng-class="{correctAnswer:option.answer}" ng-bind="option.option"></span>
+                                </li>
+                            </ul>
+                        </div>
+                        <div ng-switch-when="multi">
+                            <ul class="list-group">
+                                <li class="list-group-item" ng-repeat="option in quiz.question.options">
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-checked="option.answer" ng-disabled="true" /><span ng-class="{correctAnswer:option.answer}" ng-bind="option.option"></span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12" ng-bind="quiz.question.remark"></div>
+            </div>
+        </div>
+        <div ng-cloak class="container ng-cloak" ng-switch-when="setting">
+            <div class="row">
+                <div class="col-xs-12"><b>一般設定</b></div>
+                <div class="col-xs-6">
+                    <input type="checkbox" id="random" onchange="Util.rndCheck()" /><span data-check-previous>題目隨機排序</span>
+                </div>
+                <div class="col-xs-6">
+                    <input type="checkbox" id="shuffle" /><span data-check-previous>選項隨機排序</span>
+                </div>
+                <div class="col-xs-6">
+                    <input type="checkbox" id="memorize" /><span data-check-previous>記憶進度</span>
+                </div>
+                <div class="col-xs-6">
+                    <input type="checkbox" id="browse" /><span data-check-previous>瀏覽模式</span>
+                </div>
+                <div class="col-xs-6">
+                    <input type="checkbox" id="title" /><span data-check-previous>顯示題號</span>
+                </div>
+                <div class="col-xs-6">
+                    <input type="checkbox" id="remark" /><span data-check-previous>顯示備註</span>
+                </div>
+            </div>
+            <div class="row" id="classes" data-setting="quiz.loadSettings()"></div>
+            <div class="row">
+                <div class="col-xs-12"><b>題型設定</b></div>
+                <div class="col-xs-4">
+                    <input type="checkbox" id="single" /><span data-check-previous>單選</span>
+                </div>
+                <div class="col-xs-4">
+                    <input type="checkbox" id="multi" /><span data-check-previous>複選</span>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12"><b>題庫搜尋關鍵字</b></div>
+                <div class="col-xs-12" ng-bind="'【'+quiz.keyword.join(quiz.keywordRuleAnd ? ' and ' : ' or ')+'】'"></div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">&nbsp;</div>
+            </div>
+            <div class="row">
+                <div class="col-xs-12">
+                    <button class="btn btn-primary" ng-click="quiz.saveSettings()">儲存</button>
+                    <button class="btn btn-primary" ng-click="quiz.tab='quiz'">取消</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/QuizApp2.js"></script>
+</body>
+</html>
