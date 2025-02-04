@@ -21,5 +21,6 @@ var fileList = [
     { value: '03002', text: '第2屆', category: '風險管理基本能力測驗' },
     { value: '03001', text: '第1屆', category: '風險管理基本能力測驗' },
     { value: '04001', text: '網路通訊專業人員', category: 'ITE資訊專業人員鑑定' },
-    { value: '05001', text: '永續發展基礎能力測驗題庫', category: '永續發展' }
+    { value: '05001', text: '永續發展基礎能力測驗題庫', category: '永續發展' },
+    { value: '05002', text: '永續發展基礎能力測驗題庫(含解析，未完)', category: '永續發展' }
 ]
