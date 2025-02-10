@@ -221,16 +221,17 @@
         </div>
         <div ng-cloak class="container ng-cloak" ng-switch-when="quiz">
             <div class="row">
-                <div class="col-xs-1 text-center">
+                <div class="col-xs-1 text-center" ng-show="quiz.showox">
                     <img src="images/o.png" />
                 </div>
-                <div class="col-xs-2" ng-bind="quiz.correctCount"></div>
+                <div class="col-xs-2" ng-bind="quiz.correctCount" ng-show="quiz.showox"></div>
+                <div class="col-xs-3"  ng-show="!quiz.showox"></div>
                 <div class="col-xs-6 text-center" ng-bind="(quiz.index+1) + ' / ' + quiz.questions.length">
                 </div>
-                <div class="col-xs-1 text-center">
+                <div class="col-xs-1 text-center" ng-show="quiz.showox">
                     <img src="images/x.png" />
                 </div>
-                <div class="col-xs-2" ng-bind="quiz.incorrectCount"></div>
+                <div class="col-xs-2" ng-bind="quiz.incorrectCount" ng-show="quiz.showox"></div>
             </div>
             <div class="row" style="padding-top:10px">
                 <div class="col-xs-12">
@@ -251,14 +252,14 @@
                         <div ng-switch-when="single">
                             <ul class="list-group">
                                 <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.radio($index,$event)">
-                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && quiz.highlight && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
                         <div ng-switch-when="multi">
                             <ul class="list-group">
                                 <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.ckbox($index,$event)">
-                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && quiz.highlight && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
@@ -370,7 +371,13 @@
                     <input type="checkbox" id="memorize" /><span data-check-previous>記憶進度</span>
                 </div>
                 <div class="col-xs-6">
+                    <input type="checkbox" id="showox" /><span data-check-previous>顯示對錯題數</span>
+                </div>
+                <div class="col-xs-6">
                     <input type="checkbox" id="browse" /><span data-check-previous>瀏覽模式</span>
+                </div>
+                <div class="col-xs-6">
+                    <input type="checkbox" id="highlight" /><span data-check-previous>瀏覽色彩強調</span>
                 </div>
                 <div class="col-xs-6">
                     <input type="checkbox" id="title" /><span data-check-previous>顯示題號</span>
