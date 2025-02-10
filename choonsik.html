@@ -252,14 +252,14 @@
                         <div ng-switch-when="single">
                             <ul class="list-group">
                                 <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.radio($index,$event)">
-                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                    <input type="radio" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && quiz.highlight && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
                         <div ng-switch-when="multi">
                             <ul class="list-group">
                                 <li class="list-group-item" ng-repeat="option in quiz.question.options" ng-click="quiz.ckbox($index,$event)">
-                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && option.answer)}" ng-bind="option.option"></span>
+                                    <input type="checkbox" name="answer" ng-value="option.answer" ng-click="quiz.check($event)" ng-checked="quiz.browse ? option.answer : false" ng-disabled="quiz.browse" /><span ng-class="{correctAnswer:(quiz.question.answered && !quiz.question.correct && option.answer) || (quiz.browse && quiz.highlight && option.answer)}" ng-bind="option.option"></span>
                                 </li>
                             </ul>
                         </div>
