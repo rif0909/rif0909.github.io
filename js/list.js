@@ -25,4 +25,7 @@ var fileList = [
     { value: '05002', text: '永續發展基礎能力測驗題庫(含解析，未完)', category: '永續發展' },
     { value: '06001', text: '113年第一次測驗', category: '永續發展考古題' },
     { value: '06002', text: '113年第二次測驗', category: '永續發展考古題' },
+    { value: '06003', text: '113年第三次測驗', category: '永續發展考古題' },
+    { value: '06004', text: '113年第四次測驗', category: '永續發展考古題' },
+    { value: '06005', text: '113年第五次測驗', category: '永續發展考古題' }
 ]
