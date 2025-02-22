@@ -27,5 +27,6 @@ var fileList = [
     { value: '06002', text: '113年第二次測驗', category: '永續發展考古題' },
     { value: '06003', text: '113年第三次測驗', category: '永續發展考古題' },
     { value: '06004', text: '113年第四次測驗', category: '永續發展考古題' },
-    { value: '06005', text: '113年第五次測驗', category: '永續發展考古題' }
+    { value: '06005', text: '113年第五次測驗', category: '永續發展考古題' },
+    { value: '06007', text: '114年第一次測驗', category: '永續發展考古題' }
 ]
