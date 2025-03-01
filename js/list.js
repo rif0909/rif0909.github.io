@@ -3,6 +3,8 @@ var fileList = [
     { value: '00002', text: '財產保險業務員資格測驗練習題(未完成)', category: '其他' },
     { value: '00003', text: '職業安全衛生業務主管', category: '其他' },
     { value: '00004', text: '有機溶劑', category: '其他' },
+    { value: '07001', text: '保險法規-1', category: '人身保險業務員' },
+    { value: '07002', text: '保險實務-1', category: '人身保險業務員' },
     { value: '01033', text: '第33期', category: '銀行內部控制與內部稽核測驗' },
     { value: '01032', text: '第32期', category: '銀行內部控制與內部稽核測驗' },
     { value: '01031', text: '第31期', category: '銀行內部控制與內部稽核測驗' },
