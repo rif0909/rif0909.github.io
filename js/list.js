@@ -7,6 +7,8 @@ var fileList = [
     { value: '07002', text: '保險實務-1', category: '人身保險業務員' },
     { value: '07003', text: '保險法規-2', category: '人身保險業務員' },
     { value: '07004', text: '保險實務-2', category: '人身保險業務員' },
+    { value: '07005', text: '保險法規-3(有解析)', category: '人身保險業務員' },
+    { value: '07006', text: '保險實務-3(有解析)', category: '人身保險業務員' },
     { value: '01033', text: '第33期', category: '銀行內部控制與內部稽核測驗' },
     { value: '01032', text: '第32期', category: '銀行內部控制與內部稽核測驗' },
     { value: '01031', text: '第31期', category: '銀行內部控制與內部稽核測驗' },
