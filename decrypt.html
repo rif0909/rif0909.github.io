@@ -57,8 +57,7 @@ function decrypt(s){
 		}).then(function(r){
 			saveAs(new Blob([r], {type: "application/octet-stream"}), data.name);
 		}).catch(function(err){
-			alert('解密失敗:'+err);
-			console.log('解密失敗:'+err);
+			alert('解密失敗');
 		});
 	}
 }
